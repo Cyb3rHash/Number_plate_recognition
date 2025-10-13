@@ -1,3 +1,45 @@
+# 🚗 Indian License Plate Recognition System
+
+A Flask-based real-time vehicle detection system that recognizes Indian number plates using OpenCV and Tesseract OCR.  
+All vehicle and detection data are stored in MongoDB.
+
+## ⚙️ Features
+- Real-time camera feed with plate recognition
+- MongoDB integration for vehicle records
+- Admin dashboard with live stats
+- OCR preprocessing optimized for Indian plates
+
+## 🧠 Tech Stack
+- Python, Flask
+- OpenCV, pytesseract
+- MongoDB (pymongo)
+- HTML, CSS (Flask templates)
+
+## 🔒 Setup
+1. Create `.env` file with your MongoDB URI
+2. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 Number Plate Detection System
 =============================
 <br>
