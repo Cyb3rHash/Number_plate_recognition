@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recognized Plates - Vehicle Detection System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --secondary-color: #1e40af;
+            --accent-color: #3b82f6;
+            --dark-color: #1f2937;
+            --light-color: #f9fafb;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --gray-color: #6b7280;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%);
+            color: var(--light-color);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: var(--border-radius);
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #3b82f6, #60a5fa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .subtitle {
+            color: #d1d5db;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px 20px;
+            border-radius: var(--border-radius);
+            backdrop-filter: blur(10px);
+        }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .stat-box {
+            background: rgba(37, 99, 235, 0.2);
+            padding: 10px 20px;
+            border-radius: var(--border-radius);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .stat-number {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #60a5fa;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #d1d5db;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--border-radius);
+            font-family: 'Poppins', sans-serif;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--secondary-color);
+            transform: translateY(-2px);
+            box-shadow: var(--box-shadow);
+        }
+
+        .btn-secondary {
+            background: var(--gray-color);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+            transform: translateY(-2px);
+            box-shadow: var(--box-shadow);
+        }
+
+        .table-container {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            margin-bottom: 30px;
+            box-shadow: var(--box-shadow);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 15px 20px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        th {
+            background: rgba(37, 99, 235, 0.3);
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        th:hover {
+            background: rgba(37, 99, 235, 0.4);
+        }
+
+        th i {
+            margin-left: 5px;
+            font-size: 0.8rem;
+            opacity: 0.6;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .plate-number {
+            font-weight: 600;
+            color: #60a5fa;
+        }
+
+        .timestamp {
+            color: #9ca3af;
+            font-size: 0.9rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #9ca3af;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .page-btn {
+            padding: 8px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .page-btn.active {
+            background: var(--primary-color);
+        }
+
+        .page-btn:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            color: #9ca3af;
+            font-size: 0.9rem;
+        }
+
+        /* Refresh animation */
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .refreshing {
+            animation: rotate 1s linear infinite;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            .controls {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .actions {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .table-container {
+                overflow-x: auto;
+            }
+            
+            table {
+                min-width: 700px;
+            }
+            
+            th, td {
+                padding: 12px 15px;
+            }
+            
+            .stats {
+                justify-content: center;
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 576px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .stat-box {
+                padding: 8px 15px;
+            }
+            
+            .stat-number {
+                font-size: 1.5rem;
+            }
+            
+            .btn {
+                padding: 8px 15px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-car"></i> Recognized License Plates</h1>
+            <p class="subtitle">Real-time detection results from the vehicle number plate system</p>
+        </header>
+
+        <div class="controls">
+            <div class="stats">
+                <div class="stat-box">
+                    <span class="stat-number">{{ recognized_plates|length }}</span>
+                    <span class="stat-label">Total Detections</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-number">
+                        {% set unique_plates = [] %}
+                        {% for plate in recognized_plates %}
+                            {% if plate.plate_number not in unique_plates %}
+                                {% set _ = unique_plates.append(plate.plate_number) %}
+                            {% endif %}
+                        {% endfor %}
+                        {{ unique_plates|length }}
+                    </span>
+                    <span class="stat-label">Unique Vehicles</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-number">
+                        {% if recognized_plates %}
+                            {{ recognized_plates[0].timestamp }}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </span>
+                    <span class="stat-label">Last Detection</span>
+                </div>
+            </div>
+
+            <div class="actions">
+                <button class="btn btn-primary" onclick="window.location.reload()">
+                    <i class="fas fa-sync-alt"></i> Refresh
+                </button>
+                <button class="btn btn-secondary" onclick="window.print()">
+                    <i class="fas fa-print"></i> Print
+                </button>
+                <button class="btn btn-secondary" onclick="exportToCSV()">
+                    <i class="fas fa-download"></i> Export
+                </button>
+            </div>
+        </div>
+
+        <div class="table-container">
+            {% if recognized_plates %}
+            <table>
+                <thead>
+                    <tr>
+                        <th onclick="sortTable(0)">Plate Number <i class="fas fa-sort"></i></th>
+                        <th onclick="sortTable(1)">Owner Name <i class="fas fa-sort"></i></th>
+                        <th onclick="sortTable(2)">Make <i class="fas fa-sort"></i></th>
+                        <th onclick="sortTable(3)">Model <i class="fas fa-sort"></i></th>
+                        <th onclick="sortTable(4)">Color <i class="fas fa-sort"></i></th>
+                        <th onclick="sortTable(5)">Time Stamp <i class="fas fa-sort"></i></th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for plate in recognized_plates %}
+                    <tr>
+                        <td class="plate-number">{{ plate.plate_number }}</td>
+                        <td>{{ plate.owner_name }}</td>
+                        <td>{{ plate.make }}</td>
+                        <td>{{ plate.model }}</td>
+                        <td>{{ plate.color }}</td>
+                        <td class="timestamp">{{ plate.timestamp }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state">
+                <i class="fas fa-search"></i>
+                <h3>No plates recognized yet</h3>
+                <p>The system hasn't detected any license plates. Check back later.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        {% if recognized_plates %}
+        <div class="pagination">
+            <div class="page-btn active">1</div>
+            <div class="page-btn">2</div>
+            <div class="page-btn">3</div>
+            <div class="page-btn">...</div>
+            <div class="page-btn">10</div>
+        </div>
+        {% endif %}
+
+        <div class="footer">
+            <p>Vehicle Number Plate Detection System • {{ now }}</p>
+        </div>
+    </div>
+
+    <script>
+        // Table sorting functionality
+        function sortTable(columnIndex) {
+            const table = document.querySelector('table');
+            const tbody = table.querySelector('tbody');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            const header = table.querySelectorAll('th')[columnIndex];
+            const isAscending = header.getAttribute('data-sort') === 'asc';
+            
+            // Reset sort indicators
+            table.querySelectorAll('th i').forEach(icon => {
+                icon.className = 'fas fa-sort';
+            });
+            
+            // Update sort indicator
+            const icon = header.querySelector('i');
+            icon.className = isAscending ? 'fas fa-sort-down' : 'fas fa-sort-up';
+            
+            // Toggle sort direction
+            header.setAttribute('data-sort', isAscending ? 'desc' : 'asc');
+            
+            // Sort rows
+            rows.sort((a, b) => {
+                const aValue = a.cells[columnIndex].textContent.trim();
+                const bValue = b.cells[columnIndex].textContent.trim();
+                
+                // Custom sorting for different data types
+                if (columnIndex === 5) { // Timestamp column
+                    return isAscending ? 
+                        new Date(aValue) - new Date(bValue) : 
+                        new Date(bValue) - new Date(aValue);
+                } else {
+                    return isAscending ? 
+                        aValue.localeCompare(bValue) : 
+                        bValue.localeCompare(aValue);
+                }
+            });
+            
+            // Remove existing rows
+            while (tbody.firstChild) {
+                tbody.removeChild(tbody.firstChild);
+            }
+            
+            // Add sorted rows
+            rows.forEach(row => tbody.appendChild(row));
+        }
+        
+        // Export to CSV functionality
+        function exportToCSV() {
+            const rows = document.querySelectorAll('table tr');
+            let csvContent = "data:text/csv;charset=utf-8,";
+            
+            for (let i = 0; i < rows.length; i++) {
+                const cells = rows[i].querySelectorAll('th, td');
+                const row = Array.from(cells).map(cell => cell.textContent);
+                csvContent += row.join(',') + '\n';
+            }
+            
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement('a');
+            link.setAttribute('href', encodedUri);
+            link.setAttribute('download', 'recognized_plates.csv');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        
+        // Auto-refresh page every 30 seconds
+        setTimeout(() => {
+            window.location.reload();
+        }, 30000);
+    </script>
+</body>
+
+</html>
