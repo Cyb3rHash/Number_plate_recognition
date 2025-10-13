@@ -13,9 +13,11 @@ from collections import deque
 import time
 
 app = Flask(__name__)
+from dotenv import load_dotenv
+import os
 
-# Connect to MongoDB
-client = MongoClient("mongodb+srv://vehicle:1234@cluster0.ygqnodr.mongodb.net/")
+load_dotenv()
+client = MongoClient(os.getenv("MONGO_URI"))
 db = client['vehicle_database']
 
 vehicles_collection = db['vehicle']
