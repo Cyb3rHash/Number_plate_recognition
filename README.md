@@ -16,10 +16,22 @@ All vehicle and detection data are stored in MongoDB.
 - HTML, CSS (Flask templates)
 
 ## 🔒 Setup
-1. Create `.env` file with your MongoDB URI
+1. Create a `.env` file with required settings (at minimum, MongoDB URI):
+   - MONGO_URI=mongodb+srv://<user>:<pass>@<cluster>/<db>?retryWrites=true&w=majority
+
 2. Install dependencies:
    ```bash
    pip install -r requirements.txt
+   ```
+
+3. Run the development server (Flask CLI will auto-discover app from app.py):
+   ```bash
+   export FLASK_APP=app:app    # optional; app.py exposes `app`, Flask will auto-discover
+   flask run --host 0.0.0.0 --port 3001
+   ```
+
+4. Health check endpoint:
+   - GET http://localhost:3001/health -> {"status":"ok"}
 
 
 

@@ -5,3 +5,4 @@ pytesseract
 requests
 pymongo
 Pillow
+python-dotenv
