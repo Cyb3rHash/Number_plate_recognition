@@ -10,3 +10,5 @@ python-dotenv
 numpy
 # YOLOv8 by Ultralytics
 ultralytics
+# Optional acceleration/backends (installed only if needed in environment)
+onnxruntime

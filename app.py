@@ -31,11 +31,17 @@ def _get_detector():
     """
     global _detector_instance
     if _detector_instance is None:
+        # Prefer advanced detector; fallback to basic one if import fails
         try:
-            from detection.yolo_detector import YoloPlateDetector  # local import
-            _detector_instance = YoloPlateDetector()
-        except Exception as e:
-            _detector_instance = e  # store error to report later
+            from detection.advanced_yolo import Detector  # advanced stack
+            _detector_instance = Detector()
+        except Exception as e_adv:
+            try:
+                from detection.yolo_detector import YoloPlateDetector  # legacy/basic
+                _detector_instance = YoloPlateDetector()
+                print(f"[app] Using legacy YoloPlateDetector due to advanced detector error: {e_adv}")
+            except Exception as e_basic:
+                _detector_instance = Exception(f"Detector init failed: advanced={e_adv}; basic={e_basic}")
     return _detector_instance
 
 
