@@ -12,7 +12,14 @@ from collections import deque
 import time
 
 # Use Ultralytics YOLOv8 instead of YOLO11 for better performance
-from ultralytics import YOLO
+# Make import optional to ensure the Flask app can start even if ultralytics isn't installed.
+try:
+    from ultralytics import YOLO
+    ULTRALYTICS_AVAILABLE = True
+except Exception as _ultra_err:
+    YOLO = None  # type: ignore
+    ULTRALYTICS_AVAILABLE = False
+    print(f"Ultralytics not available: {_ultra_err}. Video detection will be disabled until installed.")
 
 app = Flask(__name__)
 
@@ -28,37 +35,35 @@ history_collection = db['history']
 class FastPlateDetector:
     def __init__(self, model_path='best.pt'):
         """
-        Initialize optimized license plate detector
-        Uses custom trained YOLOv8 model for Indian license plates
+        Initialize optimized license plate detector.
+
+        Important: We avoid loading YOLO at import time to ensure the Flask app
+        can start even if 'ultralytics' or models are not available. The actual
+        model is loaded lazily on first detection request.
         """
-        try:
-            # Try to load custom trained model first
-            self.model = YOLO(model_path)
-            print(f"✓ Custom model loaded: {model_path}")
-        except:
-            # Fallback to pretrained model (will auto-download)
-            print("⚠ Custom model not found, using YOLOv8n (will download...)")
-            self.model = YOLO('yolov8n.pt')
-        
+        # Defer YOLO model loading to detection time
+        self.model = None
+        self.model_path = model_path
+
         # Optimized parameters for speed
         self.confidence_threshold = 0.5  # Higher confidence to reduce false positives
         self.iou_threshold = 0.4
-        
+
         # Indian license plate patterns
         self.indian_patterns = [
             r'^[A-Z]{2}[0-9]{2}[A-Z]{1,2}[0-9]{4}$',  # KA01AB1234
             r'^[A-Z]{2}[0-9]{1,2}[A-Z]{1,2}[0-9]{1,4}$',  # Variations
             r'^[0-9]{2}BH[0-9]{4}[A-Z]{2}$',  # BH series
         ]
-        
+
         # Confidence tracking with time-based decay
         self.plate_confidence = {}
         self.recognition_threshold = 2  # Reduced from 3 to 2 for faster recognition
-        
+
         # Frame skipping for performance
         self.frame_skip = 2  # Process every 2nd frame
         self.frame_count = 0
-        
+
         # Cache for recent detections
         self.detection_cache = {}
         self.cache_timeout = 30  # seconds
@@ -128,40 +133,60 @@ class FastPlateDetector:
     def detect_plates_fast(self, frame):
         """Optimized detection with frame skipping"""
         self.frame_count += 1
-        
+
         # Skip frames for performance
         if self.frame_count % self.frame_skip != 0:
             return []
-        
+
+        # Lazily load the YOLO model if available and not yet loaded
+        if self.model is None:
+            if ULTRALYTICS_AVAILABLE:
+                try:
+                    # Try custom trained model first
+                    self.model = YOLO(self.model_path)
+                    print(f"✓ YOLO model loaded lazily: {self.model_path}")
+                except Exception as e:
+                    # Fallback to a small pretrained model (may trigger download)
+                    print(f"⚠ Could not load custom model '{self.model_path}': {e}. Falling back to yolov8n.pt")
+                    try:
+                        self.model = YOLO('yolov8n.pt')
+                        print("✓ YOLO fallback model loaded lazily: yolov8n.pt")
+                    except Exception as e2:
+                        print(f"✗ YOLO fallback load failed: {e2}. Detection disabled.")
+                        return []
+            else:
+                # Ultralytics not installed; cannot detect
+                return []
+
         plates = []
-        
+
         try:
             # Use smaller inference size for speed
-            results = self.model(frame, conf=self.confidence_threshold, iou=self.iou_threshold, 
-                               imgsz=640, verbose=False, half=True)  # half precision for speed
-            
+            results = self.model(frame, conf=self.confidence_threshold, iou=self.iou_threshold,
+                                 imgsz=640, verbose=False, half=True)  # half precision for speed
+
             for result in results:
                 boxes = result.boxes
                 for box in boxes:
                     x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
                     conf = box.conf[0].cpu().numpy()
-                    
+
                     # Filter by confidence
                     if conf < self.confidence_threshold:
                         continue
-                    
+
                     x, y = int(x1), int(y1)
                     w, h = int(x2 - x1), int(y2 - y1)
-                    
+
                     # Fast aspect ratio check
                     if w > 0 and h > 0:
                         aspect_ratio = w / float(h)
                         if 1.8 < aspect_ratio < 5.0 and w > 50 and h > 15:
                             plates.append((x, y, w, h, float(conf)))
-            
+
         except Exception as e:
             print(f"Detection error: {e}")
-        
+
         return plates
 
 # Initialize optimized detector

@@ -6,3 +6,5 @@ requests
 pymongo
 Pillow
 python-dotenv
+numpy
+ultralytics
