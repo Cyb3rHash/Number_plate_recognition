@@ -54,6 +54,27 @@ def health():
     return jsonify({"status": "ok"}), 200
 
 
+# PUBLIC_INTERFACE
+@app.get("/routes")
+def routes():
+    """Return the Flask URL map for diagnostics.
+
+    Returns:
+        JSON: {"rules": [{"rule": "/path", "methods": ["GET", ...], "endpoint": "func_name"}]}
+    """
+    rules = []
+    for r in app.url_map.iter_rules():
+        # Skip Flask internal static endpoints unless useful
+        rules.append(
+            {
+                "rule": str(r),
+                "methods": sorted([m for m in r.methods if m not in ("HEAD", "OPTIONS")]),
+                "endpoint": r.endpoint,
+            }
+        )
+    return jsonify({"rules": rules}), 200
+
+
 def _read_image_from_request() -> Any:
     """
     Parse image from incoming request:
@@ -163,4 +184,7 @@ class NoopDetector:
 
 if __name__ == "__main__":
     # For local debug run. In production, use `flask run --host 0.0.0.0 --port 3001`
+    print("Starting Flask app with the following URL rules:")
+    for r in app.url_map.iter_rules():
+        print(f"  {r.endpoint:20s} {sorted([m for m in r.methods if m not in ('HEAD','OPTIONS')])} -> {r}")
     app.run(host="0.0.0.0", port=3001, debug=True, threaded=True)
