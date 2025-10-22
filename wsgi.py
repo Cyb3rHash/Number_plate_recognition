@@ -16,7 +16,7 @@ from app import app as application  # Expose as `application` for WSGI servers
 # Optional: allow running with `python wsgi.py` for quick local checks
 if __name__ == "__main__":
     # For local debug; preview systems will import `application`
-    print("Starting via wsgi.py; serving `application` from app.py")
+    print("Starting via wsgi.py; serving `application` from app.py (threaded, fast health).")
     # Print routes to help diagnose if 404s occur
     for r in application.url_map.iter_rules():
         if r.endpoint != "static":

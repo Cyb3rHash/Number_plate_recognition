@@ -9,7 +9,7 @@ The generator yields multipart JPEG frames suitable for Flask streaming response
 """
 
 import time
-from typing import Generator, Optional
+from typing import Generator
 
 try:
     import cv2  # type: ignore
@@ -19,13 +19,22 @@ except Exception:  # pragma: no cover
 
 def _draw_detections(frame, detections):
     """Overlay bounding boxes and confidence."""
+    if cv2 is None:
+        return
     for det in detections:
-        x1, y1, x2, y2 = det["bbox"]
-        conf = det.get("confidence", 0.0)
+        x1, y1, x2, y2 = det.get("bbox", [0, 0, 0, 0])
+        conf = float(det.get("confidence", 0.0))
         label = f"{det.get('class_name', 'plate')} {conf:.2f}"
         color = (0, 255, 0)
         cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)  # type: ignore
         cv2.putText(frame, label, (x1, max(0, y1 - 5)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1)  # type: ignore
+
+
+def _encode_jpeg(frame):
+    if cv2 is None:
+        # return raw if cv2 missing (won't be used normally)
+        return True, frame
+    return cv2.imencode(".jpg", frame, [int(cv2.IMWRITE_JPEG_QUALITY), 80])
 
 
 # PUBLIC_INTERFACE
@@ -34,67 +43,94 @@ def mjpeg_generator(detector, cam_index: int = 0, width: int = 640, height: int 
 
     Args:
         detector: An object with detect_plates(image) -> List[dict] interface.
-        cam_index: Camera index for cv2.VideoCapture.
+        cam_index: Camera index or RTSP for cv2.VideoCapture.
         width: Capture width.
         height: Capture height.
         target_fps: Desired FPS to throttle processing.
 
     Yields:
         multipart JPEG frames (bytes) for Flask streaming.
+
+    Behavior:
+        - If OpenCV is missing, yields synthetic frames.
+        - If camera cannot be opened, quickly falls back to synthetic frames.
+        - Never blocks app startup or /health responses.
     """
+    import numpy as np  # local import for faster import time of module
+
     if cv2 is None:
-        # Fallback to synthetic frames if OpenCV isn't available
-        import numpy as np  # type: ignore
+        # Synthetic stream
         h, w = height, width
         while True:
-            frame = (np.zeros((h, w, 3), dtype=np.uint8) + 30)
-            cv2_msg = f"OpenCV not available; synthetic stream"
-            # simple text
-            # Using PIL would add dependency; rely on black frame
-            _, jpeg = cv2.imencode(".jpg", frame) if cv2 else (True, frame)  # type: ignore
-            frame_bytes = jpeg.tobytes() if cv2 else frame.tobytes()  # type: ignore
+            frame = np.zeros((h, w, 3), dtype=np.uint8)
+            ok, jpeg = _encode_jpeg(frame)
+            frame_bytes = jpeg.tobytes() if ok else frame.tobytes()
             yield (b"--frame\r\n"
                    b"Content-Type: image/jpeg\r\n\r\n" + frame_bytes + b"\r\n\r\n")
             time.sleep(1.0 / max(1, target_fps))
-    else:
-        cap = cv2.VideoCapture(cam_index)
-        # Best-effort settings
-        cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
-        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
-        cap.set(cv2.CAP_PROP_FPS, target_fps)
-        cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+        # unreachable
 
+    # Try to open camera with a short timeout loop; fallback to synthetic
+    cap = cv2.VideoCapture(cam_index)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
+    cap.set(cv2.CAP_PROP_FPS, target_fps)
+    cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+
+    start = time.time()
+    opened = cap.isOpened()
+    while not opened and (time.time() - start) < 1.0:
+        time.sleep(0.05)
+        opened = cap.isOpened()
+
+    if not opened:
+        # Fallback synthetic frames if camera cannot open
         try:
-            last_time = 0.0
-            while True:
-                ok, frame = cap.read()
-                if not ok or frame is None:
-                    time.sleep(0.05)
-                    continue
+            cap.release()
+        except Exception:
+            pass
+        h, w = height, width
+        while True:
+            frame = np.zeros((h, w, 3), dtype=np.uint8)
+            ok, jpeg = _encode_jpeg(frame)
+            frame_bytes = jpeg.tobytes() if ok else frame.tobytes()
+            yield (b"--frame\r\n"
+                   b"Content-Type: image/jpeg\r\n\r\n" + frame_bytes + b"\r\n\r\n")
+            time.sleep(1.0 / max(1, target_fps))
+        # unreachable
 
-                # Optionally throttle
-                now = time.time()
-                if target_fps > 0:
-                    min_interval = 1.0 / target_fps
-                    if now - last_time < min_interval:
-                        # Skip detection but still yield latest frame to keep stream smooth
-                        _, jpeg = cv2.imencode(".jpg", frame)
-                        frame_bytes = jpeg.tobytes()
-                        yield (b"--frame\r\n"
-                               b"Content-Type: image/jpeg\r\n\r\n" + frame_bytes + b"\r\n\r\n")
-                        continue
-                    last_time = now
+    try:
+        last_time = 0.0
+        while True:
+            ok, frame = cap.read()
+            if not ok or frame is None:
+                time.sleep(0.05)
+                continue
 
-                # Run detection and draw
-                try:
-                    detections = detector.detect_plates(frame)
-                except Exception:
-                    detections = []
-                _draw_detections(frame, detections)
-
-                _, jpeg = cv2.imencode(".jpg", frame, [int(cv2.IMWRITE_JPEG_QUALITY), 80])
-                frame_bytes = jpeg.tobytes()
+            now = time.time()
+            min_interval = 1.0 / max(1, target_fps)
+            if now - last_time < min_interval:
+                # Yield current frame without detection to maintain smoothness
+                ok_j, jpeg = _encode_jpeg(frame)
+                frame_bytes = jpeg.tobytes() if ok_j else frame.tobytes()
                 yield (b"--frame\r\n"
                        b"Content-Type: image/jpeg\r\n\r\n" + frame_bytes + b"\r\n\r\n")
-        finally:
+                continue
+            last_time = now
+
+            # Run detection in a try/except to avoid breaking stream
+            try:
+                detections = detector.detect_plates(frame)
+            except Exception:
+                detections = []
+            _draw_detections(frame, detections)
+
+            ok_j, jpeg = _encode_jpeg(frame)
+            frame_bytes = jpeg.tobytes() if ok_j else frame.tobytes()
+            yield (b"--frame\r\n"
+                   b"Content-Type: image/jpeg\r\n\r\n" + frame_bytes + b"\r\n\r\n")
+    finally:
+        try:
             cap.release()
+        except Exception:
+            pass

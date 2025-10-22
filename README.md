@@ -16,6 +16,7 @@ What’s new:
 
 Endpoints:
 - /, /health, /routes
+  - Health and routes are guaranteed to return quickly (<200ms) with no model/camera init on first call
 - /detect (POST image)
 - /stream (GET MJPEG)
 - /video_feed (alias of /stream)
@@ -45,6 +46,9 @@ See .env.example for all keys. Common:
 - OCR_OEM=3
 - OCR_WHITELIST=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789
 - MONGO_URI=mongodb+srv://user:pass@cluster/vehicle_database?retryWrites=true&w=majority
+- MONGO_CONNECT_TIMEOUT_MS=500
+- MONGO_SERVER_SELECTION_TIMEOUT_MS=500
+- MONGO_SOCKET_TIMEOUT_MS=5000
 
 Create a .env file populated from .env.example (do not commit secrets).
 

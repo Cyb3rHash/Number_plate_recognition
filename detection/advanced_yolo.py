@@ -302,7 +302,14 @@ class _MongoWriter(threading.Thread):
 
         if uri and _MONGO_AVAILABLE:
             try:
-                self._client = MongoClient(uri, connect=False)
+                # Use conservative timeouts so DB issues never block app startup/requests
+                self._client = MongoClient(
+                    uri,
+                    connect=False,
+                    connectTimeoutMS=int(os.getenv("MONGO_CONNECT_TIMEOUT_MS", "500")),
+                    serverSelectionTimeoutMS=int(os.getenv("MONGO_SERVER_SELECTION_TIMEOUT_MS", "500")),
+                    socketTimeoutMS=int(os.getenv("MONGO_SOCKET_TIMEOUT_MS", "5000")),
+                )
                 db_name = (self._client.get_default_database().name
                            if self._client.get_default_database() is not None else "vehicle_database")
                 db = self._client[db_name]
@@ -401,7 +408,7 @@ class Detector:
         self.imgsz = _env_int("YOLO_IMG_SIZE", _env_int("YOLO_IMG_SIZE".upper(), 640))  # tolerate variations
         self.conf = _env_float("YOLO_CONF", _env_float("YOLO_CONF_THRESH", 0.25))
         self.iou = _env_float("YOLO_IOU", _env_float("YOLO_IOU_THRESH", 0.45))
-        self.max_det = _env_int("YOLO_MAX_DET", 300)
+        self.max_det = _env_int("YOLO_MAX_DET", 100)
         self.classes = _parse_classes(_env_str("YOLO_CLASSES", ""))
 
         # OCR config
