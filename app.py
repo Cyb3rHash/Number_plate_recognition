@@ -44,6 +44,31 @@ def _error_response(message: str, status: int = 500):
 
 
 # PUBLIC_INTERFACE
+@app.get("/")
+def index():
+    """Landing endpoint for quick diagnostics.
+
+    Returns:
+        JSON: Summary with available endpoints and url_map.
+    """
+    rules = []
+    for r in app.url_map.iter_rules():
+        rules.append(
+            {
+                "rule": str(r),
+                "methods": sorted([m for m in r.methods if m not in ("HEAD", "OPTIONS")]),
+                "endpoint": r.endpoint,
+            }
+        )
+    return jsonify(
+        {
+            "message": "Number Plate Recognition API",
+            "endpoints": ["/health", "/routes", "/detect", "/stream"],
+            "url_map_count": len(rules),
+        }
+    ), 200
+
+# PUBLIC_INTERFACE
 @app.get("/health")
 def health():
     """Health check endpoint for preview/monitoring systems.

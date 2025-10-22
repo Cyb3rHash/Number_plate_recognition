@@ -55,9 +55,16 @@ export FLASK_APP=app:app    # app.py exposes `app`
 flask run --host 0.0.0.0 --port 3001
 ```
 
+Or via WSGI (no FLASK_APP needed; common in preview environments):
+```bash
+gunicorn -b 0.0.0.0:3001 wsgi:application
+```
+
 Or directly:
 ```bash
 python app.py
+# or
+python wsgi.py
 ```
 
 Startup is fast because the YOLO model is not loaded until first use.
