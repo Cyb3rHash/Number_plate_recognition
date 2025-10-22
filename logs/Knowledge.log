@@ -1,0 +1,134 @@
+2025-10-22 09:39:05,188 - Knowledge - INFO - Created shared MongoDB connection pool
+2025-10-22 09:39:05,543 - Knowledge - INFO - Starting Knowledge Graph processing with 50 threads
+2025-10-22 09:39:05,754 - Knowledge - INFO - Initial configuration: chunk_size=65536, max_cache_size=500
+2025-10-22 09:39:07,358 - Knowledge - INFO - load persisted knowledge: begin
+2025-10-22 09:39:07,596 - Knowledge - INFO - Loaded 0 files from persisted knowledge
+2025-10-22 09:39:07,787 - Knowledge - INFO - load persisted knowledge: end
+2025-10-22 09:39:08,007 - Knowledge - WARNING - No persisted knowledge found. Files will be queued during start()
+2025-10-22 09:39:08,199 - Knowledge - INFO - Redis support added with prefix knowledge:b0424md:
+2025-10-22 09:39:08,455 - Knowledge - INFO - load persisted docinfo: begin
+2025-10-22 09:39:08,616 - Knowledge - INFO - load persisted docinfo: end
+2025-10-22 09:39:08,825 - Knowledge - INFO - Populating ingest queue with source files...
+2025-10-22 09:39:09,039 - Knowledge - INFO - Added 11 files from /app/data/b2c/178738/b0424md/Number_plate_recognition to ingest queue
+2025-10-22 09:39:09,238 - Knowledge - INFO - Worker kw1 created using shared MongoDB connection pool
+2025-10-22 09:39:09,438 - Knowledge - INFO - knowledge worker kw1 start
+2025-10-22 09:39:09,438 - Knowledge - INFO - Worker kw2 created using shared MongoDB connection pool
+2025-10-22 09:39:09,633 - Knowledge - INFO - [kw1] Queue=11, InProgress=0, PendingWorkers=0/1, Completed=0/11 (0.0%)
+2025-10-22 09:39:09,726 - Knowledge - INFO - knowledge worker kw2 start
+2025-10-22 09:39:09,726 - Knowledge - INFO - Worker kw3 created using shared MongoDB connection pool
+2025-10-22 09:39:09,803 - Knowledge - INFO - Dynamic batch size: 11 for queue=11
+2025-10-22 09:39:09,933 - Knowledge - INFO - [kw2] Queue=11, InProgress=0, PendingWorkers=0/2, Completed=0/11 (0.0%)
+2025-10-22 09:39:10,036 - Knowledge - INFO - knowledge worker kw3 start
+2025-10-22 09:39:10,036 - Knowledge - INFO - Worker kw4 created using shared MongoDB connection pool
+2025-10-22 09:39:10,130 - Knowledge - INFO - Worker kw1 processing /app/data/b2c/178738/b0424md/Number_plate_recognition/static/recognizedstyle.css
+2025-10-22 09:39:10,208 - Knowledge - INFO - Dynamic batch size: 11 for queue=11
+2025-10-22 09:39:10,418 - Knowledge - INFO - knowledge worker kw4 start
+2025-10-22 09:39:10,419 - Knowledge - INFO - Worker kw5 created using shared MongoDB connection pool
+2025-10-22 09:39:10,541 - Knowledge - INFO - Fast-tracked /app/data/b2c/178738/b0424md/Number_plate_recognition/static/recognizedstyle.css (ext=.css, size=727)
+2025-10-22 09:39:10,841 - Knowledge - INFO - knowledge worker kw5 start
+2025-10-22 09:39:10,844 - Knowledge - INFO - Worker kw6 created using shared MongoDB connection pool
+2025-10-22 09:39:10,935 - Knowledge - INFO - Worker kw1 processing /app/data/b2c/178738/b0424md/Number_plate_recognition/static/mystyle.css
+2025-10-22 09:39:11,133 - Knowledge - INFO - knowledge worker kw6 start
+2025-10-22 09:39:11,133 - Knowledge - INFO - Worker kw7 created using shared MongoDB connection pool
+2025-10-22 09:39:11,213 - Knowledge - INFO - Fast-tracked /app/data/b2c/178738/b0424md/Number_plate_recognition/static/mystyle.css (ext=.css, size=3717)
+2025-10-22 09:39:11,439 - Knowledge - INFO - knowledge worker kw7 start
+2025-10-22 09:39:11,440 - Knowledge - INFO - Worker kw8 created using shared MongoDB connection pool
+2025-10-22 09:39:11,531 - Knowledge - INFO - Worker kw1 processing /app/data/b2c/178738/b0424md/Number_plate_recognition/static/loginstyle.css
+2025-10-22 09:39:11,709 - Knowledge - INFO - knowledge worker kw8 start
+2025-10-22 09:39:11,710 - Knowledge - INFO - Worker kw9 created using shared MongoDB connection pool
+2025-10-22 09:39:11,851 - Knowledge - INFO - Fast-tracked /app/data/b2c/178738/b0424md/Number_plate_recognition/static/loginstyle.css (ext=.css, size=1440)
+2025-10-22 09:39:12,043 - Knowledge - INFO - knowledge worker kw9 start
+2025-10-22 09:39:12,045 - Knowledge - INFO - Worker kw10 created using shared MongoDB connection pool
+2025-10-22 09:39:12,139 - Knowledge - INFO - Worker kw1 processing /app/data/b2c/178738/b0424md/Number_plate_recognition/static/recordstyle.css
+2025-10-22 09:39:12,351 - Knowledge - INFO - knowledge worker kw10 start
+2025-10-22 09:39:12,352 - Knowledge - INFO - Worker kw11 created using shared MongoDB connection pool
+2025-10-22 09:39:12,470 - Knowledge - INFO - Fast-tracked /app/data/b2c/178738/b0424md/Number_plate_recognition/static/recordstyle.css (ext=.css, size=1153)
+2025-10-22 09:39:12,648 - Knowledge - INFO - knowledge worker kw11 start
+2025-10-22 09:39:12,738 - Knowledge - INFO - Worker kw1 processing /app/data/b2c/178738/b0424md/Number_plate_recognition/requirements.txt
+2025-10-22 09:39:12,988 - Knowledge - INFO - Fast-tracked /app/data/b2c/178738/b0424md/Number_plate_recognition/requirements.txt (ext=.txt, size=72)
+2025-10-22 09:39:13,155 - Knowledge - INFO - Worker kw1 processing /app/data/b2c/178738/b0424md/Number_plate_recognition/myapp.py
+2025-10-22 09:39:13,345 - Knowledge - INFO - Worker kw1 processing /app/data/b2c/178738/b0424md/Number_plate_recognition/README.md
+2025-10-22 09:39:13,524 - Knowledge - INFO - Fast-tracked /app/data/b2c/178738/b0424md/Number_plate_recognition/README.md (ext=.md, size=14248)
+2025-10-22 09:39:13,690 - Knowledge - INFO - Worker kw1 processing /app/data/b2c/178738/b0424md/Number_plate_recognition/templates/login.html
+2025-10-22 09:39:13,869 - Knowledge - INFO - Worker kw1 processing /app/data/b2c/178738/b0424md/Number_plate_recognition/templates/records.html
+2025-10-22 09:39:14,072 - Knowledge - INFO - Worker kw1 processing /app/data/b2c/178738/b0424md/Number_plate_recognition/templates/recognized_plates.html
+2025-10-22 09:39:14,237 - Knowledge - INFO - Worker kw1 processing /app/data/b2c/178738/b0424md/Number_plate_recognition/templates/index.html
+2025-10-22 09:39:20,539 - Knowledge - INFO - [LLM_CALL] Completed: records.html:chunk1, Duration: 4213ms, PromptTokens: 2410, CompletionTokens: 59, Cost: $0.00000
+2025-10-22 09:39:20,785 - Knowledge - INFO - done ingest for /app/data/b2c/178738/b0424md/Number_plate_recognition/templates/records.html
+2025-10-22 09:39:21,027 - Knowledge - INFO - [LLM_CALL] Completed: index.html:chunk1, Duration: 2813ms, PromptTokens: 13074, CompletionTokens: 118, Cost: $0.00000
+2025-10-22 09:39:21,220 - Knowledge - INFO - done ingest for /app/data/b2c/178738/b0424md/Number_plate_recognition/templates/index.html
+2025-10-22 09:39:21,592 - Knowledge - INFO - [LLM_CALL] Completed: login.html:chunk1, Duration: 6169ms, PromptTokens: 20466, CompletionTokens: 177, Cost: $0.00000
+2025-10-22 09:39:21,812 - Knowledge - INFO - done ingest for /app/data/b2c/178738/b0424md/Number_plate_recognition/templates/login.html
+2025-10-22 09:39:22,138 - Knowledge - INFO - [LLM_CALL] Completed: recognized_plates.html:chunk1, Duration: 4848ms, PromptTokens: 27812, CompletionTokens: 236, Cost: $0.00000
+2025-10-22 09:39:22,365 - Knowledge - INFO - done ingest for /app/data/b2c/178738/b0424md/Number_plate_recognition/templates/recognized_plates.html
+2025-10-22 09:39:25,949 - Knowledge - INFO - [LLM_CALL] Completed: myapp.py:chunk1, Duration: 11514ms, PromptTokens: 36658, CompletionTokens: 852, Cost: $0.00000
+2025-10-22 09:39:26,153 - Knowledge - INFO - done ingest for /app/data/b2c/178738/b0424md/Number_plate_recognition/myapp.py
+2025-10-22 09:39:26,401 - Knowledge - INFO - Processing batch of 11 files
+2025-10-22 09:39:26,599 - Knowledge - INFO - process ingested knowledge for /app/data/b2c/178738/b0424md/Number_plate_recognition/static/recognizedstyle.css
+2025-10-22 09:39:26,793 - Knowledge - INFO - process ingested knowledge for /app/data/b2c/178738/b0424md/Number_plate_recognition/static/mystyle.css
+2025-10-22 09:39:26,975 - Knowledge - INFO - process ingested knowledge for /app/data/b2c/178738/b0424md/Number_plate_recognition/static/loginstyle.css
+2025-10-22 09:39:27,156 - Knowledge - INFO - process ingested knowledge for /app/data/b2c/178738/b0424md/Number_plate_recognition/static/recordstyle.css
+2025-10-22 09:39:27,368 - Knowledge - INFO - process ingested knowledge for /app/data/b2c/178738/b0424md/Number_plate_recognition/requirements.txt
+2025-10-22 09:39:27,580 - Knowledge - INFO - process ingested knowledge for /app/data/b2c/178738/b0424md/Number_plate_recognition/myapp.py
+2025-10-22 09:39:27,790 - Knowledge - INFO - process ingested knowledge for /app/data/b2c/178738/b0424md/Number_plate_recognition/README.md
+2025-10-22 09:39:27,957 - Knowledge - INFO - process ingested knowledge for /app/data/b2c/178738/b0424md/Number_plate_recognition/templates/login.html
+2025-10-22 09:39:28,158 - Knowledge - INFO - process ingested knowledge for /app/data/b2c/178738/b0424md/Number_plate_recognition/templates/records.html
+2025-10-22 09:39:28,370 - Knowledge - INFO - process ingested knowledge for /app/data/b2c/178738/b0424md/Number_plate_recognition/templates/recognized_plates.html
+2025-10-22 09:39:28,563 - Knowledge - INFO - process ingested knowledge for /app/data/b2c/178738/b0424md/Number_plate_recognition/templates/index.html
+2025-10-22 09:39:29,391 - Knowledge - INFO - [WEBSOCKET] Sent: Type=progress_update, Size: 245, Duration: 0ms
+2025-10-22 09:39:29,563 - Knowledge - INFO - [WEBSOCKET] Sent: Type=unknown, Size: ?, Duration: 172ms
+2025-10-22 09:39:29,800 - Knowledge - INFO - Progress: 100.0% | Files: 11/11 | Rate: 0.45 files/sec | Queue: 0
+2025-10-22 09:39:30,019 - Knowledge - INFO - Knowledge creation complete
+2025-10-22 09:39:30,230 - Knowledge - INFO - ==================================================
+2025-10-22 09:39:30,443 - Knowledge - INFO - KNOWLEDGE GRAPH GENERATION PERFORMANCE SUMMARY
+2025-10-22 09:39:30,654 - Knowledge - INFO - ==================================================
+2025-10-22 09:39:30,832 - Knowledge - INFO - Total processing time: 25.04 seconds (0.42 minutes)
+2025-10-22 09:39:31,018 - Knowledge - INFO - Files processed: 0
+2025-10-22 09:39:31,179 - Knowledge - INFO - Processing rate: 0.00 files/second
+2025-10-22 09:39:31,339 - Knowledge - INFO - 
+[TIME_BREAKDOWN]
+2025-10-22 09:39:31,534 - Knowledge - INFO - File Reading: 0.00s (0.0%)
+2025-10-22 09:39:31,696 - Knowledge - INFO - LLM Processing: 29.56s (118.0%)
+2025-10-22 09:39:31,889 - Knowledge - INFO - MongoDB Operations: 0.00s (0.0%)
+2025-10-22 09:39:32,089 - Knowledge - INFO - Redis Operations: 0.00s (0.0%)
+2025-10-22 09:39:32,252 - Knowledge - INFO - WebSocket Communication: 0.17s (0.7%)
+2025-10-22 09:39:32,485 - Knowledge - INFO - 
+[LLM_STATS]
+2025-10-22 09:39:32,651 - Knowledge - INFO - Total LLM calls: 5
+2025-10-22 09:39:32,838 - Knowledge - INFO - Average LLM response time: 5911ms
+2025-10-22 09:39:33,064 - Knowledge - INFO - Average prompt tokens: 20084.0
+2025-10-22 09:39:33,233 - Knowledge - INFO - Average completion tokens: 288.4
+2025-10-22 09:39:33,427 - Knowledge - INFO - Total prompt tokens: 100420
+2025-10-22 09:39:33,604 - Knowledge - INFO - Total completion tokens: 1442
+2025-10-22 09:39:33,807 - Knowledge - INFO - Total LLM cost: $0.0000
+2025-10-22 09:39:34,009 - Knowledge - INFO - 
+[DATABASE_STATS]
+2025-10-22 09:39:34,238 - Knowledge - INFO - MongoDB operations: 0
+2025-10-22 09:39:34,459 - Knowledge - INFO - Redis operations: 0
+2025-10-22 09:39:34,672 - Knowledge - INFO - 
+[COMMUNICATION_STATS]
+2025-10-22 09:39:34,857 - Knowledge - INFO - WebSocket messages sent: 2
+2025-10-22 09:39:35,027 - Knowledge - INFO - Average message size: 122.5 bytes
+2025-10-22 09:39:35,203 - Knowledge - INFO - 
+[WORKER_STATS]
+2025-10-22 09:39:35,394 - Knowledge - INFO - 
+[FILE_TYPE_STATS]
+2025-10-22 09:39:35,587 - Knowledge - INFO - 
+[SLOWEST_FILES]
+2025-10-22 09:39:35,775 - Knowledge - INFO - ==================================================
+2025-10-22 09:39:35,936 - Knowledge - INFO - ==================================================
+2025-10-22 09:39:36,108 - Knowledge - INFO - KNOWLEDGE GRAPH GENERATION PERFORMANCE SUMMARY
+2025-10-22 09:39:36,282 - Knowledge - INFO - ==================================================
+2025-10-22 09:39:36,468 - Knowledge - INFO - Total processing time: 30.77 seconds (0.51 minutes)
+2025-10-22 09:39:36,645 - Knowledge - INFO - Files processed: 11 of 11
+2025-10-22 09:39:36,828 - Knowledge - INFO - Processing rate: 0.36 files/second
+2025-10-22 09:39:36,991 - Knowledge - INFO - WebSocket messages sent: 1
+2025-10-22 09:39:37,194 - Knowledge - INFO - MongoDB operations: 11
+2025-10-22 09:39:37,385 - Knowledge - INFO - Average MongoDB ops per file: 1.00
+2025-10-22 09:39:37,548 - Knowledge - INFO - LLM costs: $0.0040
+2025-10-22 09:39:37,698 - Knowledge - INFO - Prompt tokens: 36658
+2025-10-22 09:39:37,851 - Knowledge - INFO - Completion tokens: 852
+2025-10-22 09:39:38,014 - Knowledge - INFO - Updating org costs, total cost: 0.0040066
+2025-10-22 09:39:39,205 - Knowledge - INFO - [WEBSOCKET] Sent: Type=progress_update, Size: 242, Duration: 0ms
+2025-10-22 09:39:39,380 - Knowledge - INFO - Saving knowledge to Redis...
+2025-10-22 09:39:39,594 - Knowledge - INFO - Knowledge saved to Redis successfully
