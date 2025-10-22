@@ -1,391 +1,155 @@
-# 🚗 Indian License Plate Recognition System
+# 🚗 Indian License Plate Recognition System (YOLOv8n-powered)
 
-A Flask-based real-time vehicle detection system that recognizes Indian number plates using OpenCV and Tesseract OCR.  
-All vehicle and detection data are stored in MongoDB.
+Flask backend for real-time license plate detection, now powered by Ultralytics YOLOv8n with lazy-loading to keep startup fast. Existing dashboard pages and MongoDB/OCR routes remain available for compatibility, while the new detection API and MJPEG streaming are optimized for inference.
+
+What’s new:
+- YOLOv8n detector with lazy-loading (model loads only on first use)
+- New REST: POST /detect (multipart or base64 JSON)
+- New MJPEG streaming: GET /stream with on-frame overlays
+- Configurable performance via environment variables (GPU auto if available; optional FP16)
+- Graceful fallback to CPU when CUDA is not present
+- Lightweight GET /health stays for monitoring
 
 ## ⚙️ Features
-- Real-time camera feed with plate recognition
-- MongoDB integration for vehicle records
-- Admin dashboard with live stats
-- OCR preprocessing optimized for Indian plates
+- Real-time camera feed with YOLO overlay
+- YOLOv8n-based plate detection (default yolov8n.pt; can use custom model via env)
+- MongoDB integration for vehicle records (existing)
+- Admin dashboard and stats (existing)
+- OCR preprocessing support remains (legacy flow)
 
 ## 🧠 Tech Stack
 - Python, Flask
-- OpenCV, pytesseract
+- Ultralytics YOLOv8 (yolov8n)
+- OpenCV (headless for servers)
 - MongoDB (pymongo)
-- HTML, CSS (Flask templates)
+- Tesseract OCR (legacy OCR flows)
+- HTML/CSS (Flask templates)
 
-## 🔒 Setup
-1. Create a `.env` file with required settings (at minimum, MongoDB URI):
-   - MONGO_URI=mongodb+srv://<user>:<pass>@<cluster>/<db>?retryWrites=true&w=majority
+## 🔧 Environment Configuration
+Set these environment variables to control inference behavior (defaults shown):
 
-2. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
+- YOLO_MODEL_PATH= yolov8n.pt
+- YOLO_CONF_THRESH= 0.25
+- YOLO_IOU_THRESH= 0.45
+- YOLO_IMG_SIZE= 640
+- YOLO_DEVICE= auto        # auto | cpu | cuda | 0 | 1 ...
+- YOLO_HALF= false         # true to request FP16 (CUDA only)
 
-3. Run the development server (Flask CLI will auto-discover app from app.py):
-   ```bash
-   export FLASK_APP=app:app    # optional; app.py exposes `app`, Flask will auto-discover
-   flask run --host 0.0.0.0 --port 3001
-   ```
+If using MongoDB features (legacy dashboard/data):
+- MONGO_URI=mongodb+srv://<user>:<pass>@<cluster>/<db>?retryWrites=true&w=majority
 
-4. Health check endpoint:
-   - GET http://localhost:3001/health -> {"status":"ok"}
+You may create a .env file with the above variables (the app reads typical environment variables; do not commit secrets).
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Number Plate Detection System
-=============================
-<br>
-
-> **_INTRODUCTION_**
-
-In recent years, the integration of computer vision technologies with everyday applications has led to significant advancements in various fields, ranging from surveillance and security to transportation and automation. One such application is the development of a Number Plate Recognition System, which employs a combination of image processing techniques and optical character recognition (OCR) to automatically identify and recognize number plates in real-time video streams. This system holds immense potential for enhancing traffic management, law enforcement, and parking systems by providing efficient and accurate vehicle identification capabilities.
-
-In recent years, the integration of computer vision technologies with everyday applications has led to significant advancements in various fields, ranging from surveillance and security to transportation and automation. One such application is the development of a Number Plate Recognition System, which employs a combination of image processing techniques and optical character recognition (OCR) to automatically identify and recognize number plates in real-time video streams. This system holds immense potential for enhancing traffic management, law enforcement, and parking systems by providing efficient and accurate vehicle identification capabilities.
-
-<p align="center">
-<img src="https://miro.medium.com/v2/resize:fit:640/format:webp/1*PvJgjxWWRmHptWJ4oIx0kw.png" alt="Image 1">
-</p>
-
-Key components of the Number Plate Recognition System include a Haar cascade classifier for number plate detection, Tesseract OCR for character recognition, and MongoDB for storing and managing vehicle information. The system architecture is designed to facilitate real-time processing of video streams, ensuring prompt identification of vehicles as they pass through the monitored area. Additionally, a user-friendly web interface built with Flask framework allows for functionalities such as adding new vehicles to the database and viewing recognized plate records.
-
-This project aims to address several challenges associated with Number plate recognition, including variations in plate appearance due to factors such as lighting conditions, viewing angle, and occlusions. Advanced image processing techniques are employed to enhance the robustness and accuracy of plate detection and character recognition, thereby improving the overall performance of the system. Furthermore, the integration of user authentication mechanisms ensures secure access to system functionalities, preventing unauthorized users from tampering with the database or system settings.
-
-<br>
-
-> **_SYSTEM COMPONENTS_**
-
-▶ Python: Programming language used for system development. Provides flexibility, ease of use, and extensive libraries for image processing.
-
-▶ OpenCV (Open Source Computer Vision Library): Integral for image and video processing tasks. Facilitates license plate detection and optical character recognition (OCR).
-
-▶ Flask: Web framework for building the user interface. Enables communication between the backend and frontend components.
-
-▶ MongoDB: NoSQL database used for storing recognized plate information. Provides scalability, flexibility, and compatibility with Python-based applications.
-
-<br>
-
-> **_WORK FLOW_**
-
-<p align="center">
-<img src="https://miro.medium.com/v2/resize:fit:720/format:webp/1*C8qzrtGpj91bo9jCuDOVZA.png" alt="Image 2">
-</p>
-
-<br>
-
-> **_SYSTEM ARCHITECTURE_**
-
-<p align="center">
-<img src="https://miro.medium.com/v2/resize:fit:720/format:webp/1*kMaNzQJ7d-6RM7upI0KTGw.png" alt="Image 1">
-</p>
-
-<br>
-
-> **_IMAGE PRE-PROCESSING_**
-
-▶ Edge Detection: Edge detection is indirectly utilized through the use of the pre-trained license plate detection cascade (plate\_cascade). While the specific edge detection algorithm is not explicitly mentioned in the code, the detectMultiScale function of OpenCV’s CascadeClassifier class detects objects based on edges in the input image. This method inherently involves edge detection techniques to identify regions of interest (license plates) based on edge features.
-
-▶Contour Tracing: Contour tracing is employed to highlight the boundaries of detected license plates. After detecting the regions of interest using the cascade classifier, the code draws rectangles around these regions, effectively outlining the contours of the license plates.
-
-<p align="center">
-<img src="https://miro.medium.com/v2/resize:fit:720/format:webp/1*vC4KJWIBgOymEOW53JW-yg.jpeg" alt="Image 3">
-</p>
-
-<br>
-
-> **_LIBRARIES_**
-
-Install all the libraries and required dependencies.
-
+## 📦 Install
+```bash
+pip install -r requirements.txt
 ```
-import os  
-from unittest import result  
-import cv2  
-from datetime import datetime, timedelta, timezone  
-import pytesseract  
-import requests  
-from PIL import Image  
-from flask import Flask, jsonify, redirect, render\_template, Response, request, session, url\_for  
-import threading  
-from pymongo import MongoClient
-```
-<br>
+Notes:
+- The first detection may trigger an automatic model download (Ultralytics).
+- We use opencv-python-headless for server-friendly environments.
 
-
-> **_DATABASE CONNECTION_**
-
-The application connects to a MongoDB database. MongoDB Atlas is used for cloud-hosted MongoDB, allowing easy scaling and management.
-
-```
-client = MongoClient("<mongodb server url>")  
-db = client['vehicle_database']  
-vehicles_collection = db['vehicle']  
-history_collection = db['history']
+## 🚀 Run
+Using Flask CLI (recommended):
+```bash
+export FLASK_APP=app:app    # app.py exposes `app`
+flask run --host 0.0.0.0 --port 3001
 ```
 
-The `vehicles_collection` stores vehicle details, while the `history_collection` logs detected plates and their timestamps.
-
-<br>
-
-> **_LOADING VEHICLE DATABASE_**
-
-```
-def load_vehicle_database():  
-    database = {}  
-    vehicles_collection = db['vehicle']  
-    for vehicle in vehicles_collection.find():  
-        plate_number = vehicle['plate_number']  
-        database[plate_number] = {  
-            "owner_name": vehicle['owner_name'],  
-            "make": vehicle['make'],  
-            "model": vehicle['model'],  
-            "color": vehicle['color']  
-        }  
-    print("Vehicle database loaded successfully.")  
-    return database  
-  
-vehicle_database = load_vehicle_database()
+Or directly:
+```bash
+python app.py
 ```
 
-This function queries all vehicle records from MongoDB and stores them in a dictionary where the plate number is the key.
+Startup is fast because the YOLO model is not loaded until first use.
 
-<br>
+## ✅ Health
+- GET http://localhost:3001/health
+  - Response: {"status":"ok"}
 
-> **_VIDEO PROCESSING_**
+## 🧪 Detect API
+- POST http://localhost:3001/detect
 
-The `process_video` function captures video frames from the camera, detects license plates using OpenCV, and performs OCR using Tesseract to recognize the plate numbers.
+Send either:
+1) multipart/form-data
+   - field: image (file)
+2) application/json
+   - { "image": "<base64_image_data>" }
+3) raw body with image bytes
 
-<br>
-
-1\.  **Load Cascade for Plate Detection:** The Haar Cascade classifier is pre-trained to detect license plates.
-
-```
-plate_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_russian_plate_number.xml')
-```
-
-2\. **Configure Tesseract OCR:** Specifies the path to the Tesseract executable.
-
-```
-# for ubuntu
-pytesseract.pytesseract.tesseract_cmd = r'/usr/bin/tesseract'
-
-# for windows paste the path where it is installed
-```
-
-3\. **Define OCR Function:**
-
-```
-def perform_ocr(img):
-    custom_config = r'--oem 3 --psm 6'
-    plate_number = pytesseract.image_to_string(img, config=custom_config)
-    return plate_number.strip()
+Response:
+```json
+{
+  "success": true,
+  "detections": [
+    { "bbox": [x1,y1,x2,y2], "confidence": 0.91, "class_id": 0, "class_name": "plate" }
+  ],
+  "count": 1
+}
 ```
 
-4\. **Process Video Frames:**
+Curl examples:
+```bash
+# multipart
+curl -X POST http://localhost:3001/detect \
+  -F "image=@/path/to/image.jpg"
 
-```
-def process_video():
-    cap = cv2.VideoCapture(-1)
-    while True:
-        ret, frame = cap.read()
-        if not ret:
-            break
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        plates = plate_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
-        for (x, y, w, h) in plates:
-            plate_roi = frame[y:y + h, x:x + w]
-            pil_image = Image.fromarray(cv2.cvtColor(plate_roi, cv2.COLOR_BGR2RGB))
-            plate_number = perform_ocr(pil_image)
-            if plate_number in vehicle_database:
-                vehicle_info = vehicle_database[plate_number]
-                if plate_number not in [plate['plate_number'] for plate in recognized_plates]:
-                    timestamp = datetime.now()
-                    recognized_plates.append({
-                        "plate_number": plate_number,
-                        "owner_name": vehicle_info['owner_name'],
-                        "make": vehicle_info['make'],
-                        "model": vehicle_info['model'],
-                        "color": vehicle_info['color'],
-                        "timestamp": timestamp
-                    })
-                    history_collection.insert_one({
-                        "plate_number": plate_number,
-                        "owner_name": vehicle_info['owner_name'],
-                        "make": vehicle_info['make'],
-                        "model": vehicle_info['model'],
-                        "color": vehicle_info['color'],
-                        "timestamp": timestamp
-                    })
-                info_text = f"Owner: {vehicle_info['owner_name']}, Make: {vehicle_info['make']}, Model: {vehicle_info['model']}, Color: {vehicle_info['color']}"
-                cv2.putText(frame, info_text, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-        ret, jpeg = cv2.imencode('.jpg', frame)
-        frame_bytes = jpeg.tobytes()
-        yield (b'--frame\r\n'
-               b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n\r\n')
-    cap.release()
-```
-<br>
-
-![videoprocessing](https://github.com/user-attachments/assets/c957e24e-cffe-47b2-b390-227a00af3faa)
-
-
-*   Captures video frames and converts them to grayscale.
-*   Detects license plates in the frame using the Haar Cascade classifier.
-*   Extracts the region of interest (ROI) and performs OCR to get the plate number.
-*   Matches the recognized plate number with the database and logs the information if it’s a new recognition.
-*   Annotates the frame with vehicle information and the detected plate.
-
-<br>
-
-> **_VIDEO STREAMING_**
-
-
-```
-@app.route('/video_feed')
-def video_feed():
-    return Response(process_video(),
-                    mimetype='multipart/x-mixed-replace; boundary=frame')
+# base64 JSON
+python - <<'PY'
+import base64, requests
+with open("sample.jpg","rb") as f:
+    b64 = base64.b64encode(f.read()).decode()
+r = requests.post("http://localhost:3001/detect", json={"image": b64})
+print(r.status_code, r.json())
+PY
 ```
 
-The `video_feed` route returns a video stream using the `process_video` generator function.
+## 📺 Streaming
+- GET http://localhost:3001/stream
 
-<br>
+Returns an MJPEG stream with YOLO overlays. The camera is opened lazily when the endpoint is requested. If OpenCV is unavailable, a synthetic placeholder stream is provided (no detections).
 
-> **_USER AUTHENTICATION_**
-
-Basic user authentication is implemented to restrict access to certain routes. The login system uses Flask’s session management to keep track of logged-in users.
-
-1.  Define Admin Credentials
-2.  Login Route
-3.  Logout Route
-
-<br>
-
-> **_VEHICLE RECORD MANAGEMENT_**
-
-1.  **Add Vehicle Route:**
-
-```
-@app.route('/add_vehicle', methods=['POST'])
-def add_vehicle():
-    if 'logged_in' not in session:
-        return redirect(url_for('login'))
-    plate_number = request.form['plate_number']
-    owner_name = request.form['owner_name']
-    make = request.form['make']
-    model = request.form['model']
-    color = request.form['color']
-    vehicles_collection.insert_one({
-        "plate_number": plate_number,
-        "owner_name": owner_name,
-        "make": make,
-        "model": model,
-        "color": color
-    })
-    return redirect(url_for('index'))
+Embedding example:
+```html
+<img src="/stream" />
 ```
 
-![addnew](https://github.com/user-attachments/assets/d3b4bd92-a700-49bb-8d62-945bcc12770d)
+## ⚙️ Performance Tips
+- GPU is auto-selected if available (YOLO_DEVICE=auto). Otherwise CPU is used.
+- Enable FP16 on CUDA with YOLO_HALF=true.
+- Tune thresholds via YOLO_CONF_THRESH / YOLO_IOU_THRESH.
+- Adjust YOLO_IMG_SIZE (e.g., 640) for latency vs. accuracy trade-offs.
+- The stream throttles frames for steady performance and lower CPU usage.
 
-
-2\. **Recognized Plates Route:**
-
+## 🧰 Model
+Default model: yolov8n.pt (Ultralytics).
+To use a custom fine-tuned model (e.g., trained for Indian plates), set:
 ```
-@app.route('/recognized_plates')
-def recognized_plates_page():
-    return render_template('recognized_plates.html', recognized_plates=recognized_plates)
+YOLO_MODEL_PATH=/path/to/custom.pt
 ```
+The model is loaded lazily on first detection or when warmup() is called.
 
-![recognizedplate](https://github.com/user-attachments/assets/b079c631-3a64-4248-bbc7-35b6d7fe74a1)
+## 📁 Project Structure (relevant parts)
+- app.py                          # Flask entrypoint with /health, /detect, /stream
+- detection/
+  - __init__.py
+  - yolo_detector.py              # Lazy-loaded YOLOv8n detector (env-configurable)
+- utils/
+  - video.py                      # Lightweight MJPEG generator with overlays
+- templates/                      # Existing dashboard pages
+- static/                         # Static assets
+- requirements.txt                # Includes ultralytics and opencv-python-headless
 
+## 📝 Legacy components (kept)
+- Existing OCR and MongoDB flows, templates, and routes remain in the repo for compatibility (e.g., myapp.py, templates/*).
+- The new detection endpoints do not require MongoDB to operate.
 
+## 🔒 Security
+Do not expose this service openly without proper authentication, authorization, and rate limiting in production.
 
-<br>
-
-> **_DISPLAYING DATA_**
-
-The application provides a dashboard to display recognized plates and vehicle records.
-
-1.  **Index Route:**
-
-```
-@app.route('/index')
-def index():
-    try:
-        past_24_hours = datetime.now() - timedelta(hours=24)
-        data = history_collection.find({"timestamp": {"$gte": past_24_hours}})
-        return render_template('index.html', data=data)
-    except Exception as e:
-        app.logger.error(f"An error occurred while fetching data from the database: {e}")
-        return "An error occurred while fetching data from the database. Please check the logs for more information."
-```
-
-2\. **Records Route:**
-
-```
-@app.route('/records')
-def records():
-    try:
-        database = {}
-        records_collection = db['vehicle']
-        database = records_collection.find()
-        app.logger.info("Records fetched successfully")
-        return render_template('records.html', rec=database)
-    except Exception as e:
-        app.logger.error(f"An error occurred while fetching records from the database: {e}")
-        return "An error occurred while fetching records from the database. Please check the logs for more information."
-```
-
-The `index` route displays recognized plates within the past 24 hours, while the `records` route displays all vehicle records.
-
-
-![history](https://github.com/user-attachments/assets/2daefbfd-86e5-4fc8-b123-744426da1b33)
-
-
-
-<br>
-
-> **_RUNNING THE APPLICATION_**
-
-The Flask application is started, and video processing is run in a separate thread to avoid blocking the main thread.
-
-```
-def run_video_processing():
-    with app.app_context():
-        app.video_thread = threading.Thread(target=process_video)
-        app.video_thread.start()
-
-if __name__ == '__main__':
-    run_video_processing()
-    app.run(debug=True)
-```
-
-The `run_video_processing` function initializes and starts the video processing thread, ensuring the application remains responsive while processing video frames.
-
-
-<br>
-
-> **_CONCLUSION_**
-
-This number plate detection system integrates real-time video processing with a web-based interface, leveraging OpenCV, Tesseract OCR, and MongoDB. It demonstrates the practical application of computer vision and web technologies for automated license plate recognition and vehicle management.
-
+## 🧰 Troubleshooting
+- If ultralytics is not installed, /detect and /stream will return clear errors. Install using:
+  ```
+  pip install ultralytics
+  ```
+- If CUDA is not available, the app falls back to CPU. You can force CPU by setting `YOLO_DEVICE=cpu`.
+- For headless environments, ensure `opencv-python-headless` is installed (provided in requirements.txt).

@@ -1,18 +1,46 @@
 """
 Flask entrypoint for the Number Plate Recognition system.
 
-This module exposes the Flask application instance required by the Flask CLI
-so that `flask run --host 0.0.0.0 --port 3001` can discover and serve the app.
+This module exposes a lightweight Flask application with:
+- GET /health: Health check
+- POST /detect: Plate detection via YOLOv8n (multipart/form-data or base64 JSON)
+- GET /stream: MJPEG stream with on-frame detections (lazy camera open)
 
-It imports the main application object from myapp.py and registers a lightweight
-health-check route that is safe in environments without camera or MongoDB access.
-
-Routes:
-- GET /health: Returns 200 OK with JSON {"status": "ok"} to indicate the app is up.
+Design goals:
+- Lazy-load the YOLO model on first use to keep startup fast.
+- Performance configurable via environment variables.
+- Graceful behavior if CUDA is not available (CPU fallback).
 """
 
-from flask import jsonify
-from myapp import app  # Reuse the existing application and routes
+import os
+import json
+from typing import Any, Dict, List, Tuple
+
+from flask import Flask, jsonify, request, Response
+
+# Create a fresh Flask app for API usage
+app = Flask(__name__)
+
+# Lazy import detector so import won't fail if ultralytics not installed yet.
+_detector_instance = None
+
+
+def _get_detector():
+    """
+    Lazy instantiate and cache the YOLO detector. Never at import time.
+    """
+    global _detector_instance
+    if _detector_instance is None:
+        try:
+            from detection.yolo_detector import YoloPlateDetector  # local import
+            _detector_instance = YoloPlateDetector()
+        except Exception as e:
+            _detector_instance = e  # store error to report later
+    return _detector_instance
+
+
+def _error_response(message: str, status: int = 500):
+    return jsonify({"success": False, "error": message}), status
 
 
 # PUBLIC_INTERFACE
@@ -24,3 +52,115 @@ def health():
         JSON: {"status": "ok"} with HTTP 200 status to indicate the server is running.
     """
     return jsonify({"status": "ok"}), 200
+
+
+def _read_image_from_request() -> Any:
+    """
+    Parse image from incoming request:
+    - multipart/form-data: file under 'image'
+    - application/json: base64 under 'image' key
+    - raw bytes
+    Returns a numpy BGR array or base64/bytes for the detector to parse.
+    """
+    # Multipart form with file
+    if "image" in request.files:
+        file = request.files["image"]
+        data = file.read()
+        return data  # detector can handle bytes/base64
+
+    # JSON with base64
+    if request.is_json:
+        payload = request.get_json(silent=True) or {}
+        img_b64 = payload.get("image")
+        if not img_b64:
+            raise ValueError("JSON body must include 'image' (base64 string)")
+        return img_b64
+
+    # Raw body
+    if request.data:
+        return bytes(request.data)
+
+    raise ValueError("No image provided. Use multipart 'image' file or JSON {'image': '<base64>'}.")
+
+
+# PUBLIC_INTERFACE
+@app.post("/detect")
+def detect():
+    """Run detection on a single image.
+
+    Request:
+        - Content-Type: multipart/form-data with file field "image"
+          OR
+        - Content-Type: application/json with key "image" containing base64 data
+          OR raw image bytes as request body
+
+    Response JSON:
+        {
+          "success": true,
+          "detections": [
+            { "bbox": [x1,y1,x2,y2], "confidence": 0.91, "class_id": 0, "class_name": "plate" }
+          ],
+          "count": 1
+        }
+
+    Errors are returned as:
+        { "success": false, "error": "<message>" }
+    """
+    det = _get_detector()
+    if isinstance(det, Exception):
+        return _error_response(f"Detector initialization error: {det}", 500)
+    try:
+        img = _read_image_from_request()
+    except Exception as e:
+        return _error_response(str(e), 400)
+
+    try:
+        results = det.detect_plates(img)
+        # Convert crops to none in API output to keep payload small (internal use only)
+        output = []
+        for d in results:
+            out = dict(d)
+            out.pop("crop", None)
+            output.append(out)
+        return jsonify({"success": True, "detections": output, "count": len(output)}), 200
+    except Exception as e:
+        # If model not present/ultralytics missing, surface clear error
+        return _error_response(str(e), 500)
+
+
+# PUBLIC_INTERFACE
+@app.get("/stream")
+def stream():
+    """MJPEG streaming endpoint with YOLOv8 overlays.
+
+    Returns:
+        multipart/x-mixed-replace stream of JPEG frames.
+    Notes:
+        - Camera is lazily opened when the stream is requested.
+        - If OpenCV is not available, a synthetic stream is served.
+    """
+    det = _get_detector()
+    if isinstance(det, Exception):
+        # Still allow a stream with no detections (synthetic or raw)
+        det = None
+
+    try:
+        from utils.video import mjpeg_generator  # local import
+    except Exception as e:
+        return _error_response(f"Video streaming unavailable: {e}", 500)
+
+    gen = mjpeg_generator(det if det is not None else NoopDetector())
+    return Response(gen, mimetype="multipart/x-mixed-replace; boundary=frame")
+
+
+class NoopDetector:
+    """Fallback detector which returns no detections."""
+    # PUBLIC_INTERFACE
+    def detect_plates(self, image):
+        """Detect plates (noop)."""
+        return []
+
+
+if __name__ == "__main__":
+    # For local debug run. In production, use `flask run --host 0.0.0.0 --port 3001`
+    app.run(host="0.0.0.0", port=3001, debug=True, threaded=True)

@@ -1,10 +1,12 @@
 Flask
 Gunicorn
-opencv-python
+# Use headless variant for servers (no GUI dependencies)
+opencv-python-headless
 pytesseract
 requests
 pymongo
 Pillow
 python-dotenv
 numpy
+# YOLOv8 by Ultralytics
 ultralytics
