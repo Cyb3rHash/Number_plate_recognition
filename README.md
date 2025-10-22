@@ -67,11 +67,21 @@ python app.py
 python wsgi.py
 ```
 
-Startup is fast because the YOLO model is not loaded until first use.
+Startup is fast because the YOLO model is not loaded until first use. On startup, the app prints the Flask url_map so you can verify routes like /video_feed and /favicon.ico are registered.
 
 ## ✅ Health
 - GET http://localhost:3001/health
   - Response: {"status":"ok"}
+
+## 🧭 Routes overview
+At startup the app prints the url_map. The canonical endpoints include:
+- /                      (summary)
+- /health                (health check)
+- /routes                (diagnostics: lists all rules)
+- /detect                (YOLO inference API)
+- /stream                (MJPEG stream)
+- /video_feed            (deprecated alias of /stream)
+- /favicon.ico           (serves static/favicon.ico)
 
 ## 🧪 Detect API
 - POST http://localhost:3001/detect
@@ -112,12 +122,17 @@ PY
 
 ## 📺 Streaming
 - GET http://localhost:3001/stream
+- GET http://localhost:3001/video_feed  (deprecated alias of /stream; kept for compatibility)
 
 Returns an MJPEG stream with YOLO overlays. The camera is opened lazily when the endpoint is requested. If OpenCV is unavailable, a synthetic placeholder stream is provided (no detections).
 
-Embedding example:
+Embedding example (preferred):
 ```html
 <img src="/stream" />
+```
+Legacy embeds will continue to work:
+```html
+<img src="/video_feed" />
 ```
 
 ## ⚙️ Performance Tips
@@ -143,7 +158,7 @@ The model is loaded lazily on first detection or when warmup() is called.
 - utils/
   - video.py                      # Lightweight MJPEG generator with overlays
 - templates/                      # Existing dashboard pages
-- static/                         # Static assets
+- static/                         # Static assets (includes favicon.ico)
 - requirements.txt                # Includes ultralytics and opencv-python-headless
 
 ## 📝 Legacy components (kept)

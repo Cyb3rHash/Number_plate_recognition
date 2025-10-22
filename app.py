@@ -16,7 +16,7 @@ import os
 import json
 from typing import Any, Dict, List, Tuple
 
-from flask import Flask, jsonify, request, Response
+from flask import Flask, jsonify, request, Response, send_from_directory
 
 # Create a fresh Flask app for API usage
 app = Flask(__name__)
@@ -63,7 +63,7 @@ def index():
     return jsonify(
         {
             "message": "Number Plate Recognition API",
-            "endpoints": ["/health", "/routes", "/detect", "/stream"],
+            "endpoints": ["/", "/health", "/routes", "/detect", "/stream", "/video_feed", "/favicon.ico"],
             "url_map_count": len(rules),
         }
     ), 200
@@ -199,6 +199,36 @@ def stream():
     return Response(gen, mimetype="multipart/x-mixed-replace; boundary=frame")
 
 
+# PUBLIC_INTERFACE
+@app.get("/video_feed")
+def video_feed():
+    """Deprecated alias of /stream kept for backward compatibility.
+
+    Returns:
+        Same MJPEG stream as /stream.
+
+    Notes:
+        Prefer using /stream. This endpoint may be removed in a future release.
+    """
+    return stream()
+
+
+# PUBLIC_INTERFACE
+@app.get("/favicon.ico")
+def favicon():
+    """Serve site favicon.
+
+    Returns:
+        The favicon.ico static file with image/x-icon mimetype.
+    """
+    # Serve from the Flask 'static' folder
+    try:
+        return send_from_directory(os.path.join(app.root_path, "static"), "favicon.ico", mimetype="image/x-icon")
+    except Exception:
+        # Fallback: return 204 if icon missing (should not happen as we ship a placeholder)
+        return Response(status=204)
+
+
 class NoopDetector:
     """Fallback detector which returns no detections."""
     # PUBLIC_INTERFACE
@@ -212,4 +242,6 @@ if __name__ == "__main__":
     print("Starting Flask app with the following URL rules:")
     for r in app.url_map.iter_rules():
         print(f"  {r.endpoint:20s} {sorted([m for m in r.methods if m not in ('HEAD','OPTIONS')])} -> {r}")
+    print("URL map summary (ensure includes '/', '/health', '/routes', '/detect', '/stream', '/video_feed', '/favicon.ico'):")
+    print(app.url_map)
     app.run(host="0.0.0.0", port=3001, debug=True, threaded=True)
