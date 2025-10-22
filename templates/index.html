@@ -2,25 +2,30 @@
 <html lang="en">
 
 <head>
-    <title>Vehicle Number Plate Scanner</title>
+    <title>YOLO11 Vehicle Recognition System</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #2563eb;
-            --secondary-color: #1e40af;
-            --accent-color: #3b82f6;
-            --dark-color: #1f2937;
-            --light-color: #f9fafb;
-            --success-color: #10b981;
-            --warning-color: #f59e0b;
+            --primary-color: #3b82f6;
+            --primary-dark: #2563eb;
+            --primary-light: #60a5fa;
+            --secondary-color: #10b981;
+            --accent-purple: #8b5cf6;
+            --dark-bg: #0f172a;
+            --dark-card: #1e293b;
+            --dark-hover: #334155;
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
             --danger-color: #ef4444;
-            --gray-color: #6b7280;
-            --border-radius: 8px;
-            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            --transition: all 0.3s ease;
+            --warning-color: #f59e0b;
+            --border-color: rgba(148, 163, 184, 0.15);
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
         }
 
         * {
@@ -30,115 +35,395 @@
         }
 
         body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%);
-            color: var(--light-color);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--dark-bg);
+            color: var(--text-primary);
             line-height: 1.6;
             min-height: 100vh;
-            padding: 20px;
         }
 
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
+        /* Background effects */
+        .background-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(16, 185, 129, 0.1) 0%, transparent 50%);
+            z-index: 0;
+        }
+
+        .grid-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(148, 163, 184, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(148, 163, 184, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            z-index: 0;
+        }
+
+        /* Main container */
+        .dashboard-container {
+            position: relative;
+            z-index: 1;
             display: grid;
             grid-template-columns: 280px 1fr;
-            gap: 20px;
+            min-height: 100vh;
         }
 
-        header {
-            grid-column: 1 / -1;
-            text-align: center;
-            margin-bottom: 30px;
-            padding: 20px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: var(--border-radius);
-            backdrop-filter: blur(10px);
+        /* Sidebar */
+        .sidebar {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid var(--border-color);
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
         }
 
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            background: linear-gradient(90deg, #3b82f6, #60a5fa);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-weight: 700;
-        }
-
-        .description {
-            max-width: 800px;
-            margin: 0 auto;
-            color: #d1d5db;
-            font-size: 1.1rem;
-        }
-
-        /* Navigation */
-        nav {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: var(--border-radius);
-            padding: 20px;
-            backdrop-filter: blur(10px);
-            height: fit-content;
-        }
-
-        nav ul {
-            list-style: none;
-        }
-
-        nav li {
-            margin-bottom: 10px;
-        }
-
-        nav a {
+        .logo-section {
             display: flex;
             align-items: center;
-            padding: 12px 15px;
-            color: var(--light-color);
-            text-decoration: none;
-            border-radius: var(--border-radius);
-            transition: var(--transition);
+            gap: 12px;
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            box-shadow: var(--shadow-md);
+        }
+
+        .logo-text h2 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .logo-text p {
+            font-size: 0.75rem;
+            color: var(--text-muted);
             font-weight: 500;
         }
 
-        nav a i {
-            margin-right: 10px;
-            font-size: 1.2rem;
+        /* Navigation */
+        .nav-menu {
+            flex: 1;
         }
 
-        nav a:hover {
-            background: rgba(59, 130, 246, 0.2);
-            transform: translateX(5px);
+        .nav-section {
+            margin-bottom: 30px;
         }
 
-        nav a.active {
-            background: var(--primary-color);
-            box-shadow: var(--box-shadow);
+        .nav-section-title {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            font-weight: 600;
+            margin-bottom: 12px;
+            padding: 0 15px;
         }
 
-        /* Main Content */
-        article {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: var(--border-radius);
-            padding: 25px;
-            backdrop-filter: blur(10px);
-            min-height: 600px;
+        .nav-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
         }
 
-        .section-title {
-            font-size: 1.8rem;
-            margin-bottom: 25px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid var(--accent-color);
-            display: inline-block;
-        }
-
-        /* Scanner Section */
-        .video-container {
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: var(--border-radius);
-            overflow: hidden;
-            margin-bottom: 20px;
+        .nav-item a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 15px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            font-size: 0.9rem;
             position: relative;
+        }
+
+        .nav-item a i {
+            font-size: 18px;
+            width: 20px;
+        }
+
+        .nav-item a:hover {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--text-primary);
+            transform: translateX(4px);
+        }
+
+        .nav-item a.active {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(16, 185, 129, 0.1));
+            color: var(--text-primary);
+            border-left: 3px solid var(--primary-color);
+        }
+
+        .nav-item a.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 3px;
+            height: 70%;
+            background: var(--primary-color);
+            border-radius: 0 3px 3px 0;
+        }
+
+        /* Stats cards in sidebar */
+        .sidebar-stats {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: auto;
+        }
+
+        .sidebar-stats h4 {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+        }
+
+        .stat-item span:first-child {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .stat-item span:last-child {
+            font-weight: 700;
+            color: var(--primary-light);
+            font-size: 1rem;
+        }
+
+        /* Main content */
+        .main-content {
+            padding: 30px 40px;
+            overflow-y: auto;
+        }
+
+        /* Header */
+        .content-header {
+            background: rgba(30, 41, 59, 0.4);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .content-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 300px;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.1));
+            pointer-events: none;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .header-title h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary-light), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-header {
+            padding: 10px 18px;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            background: rgba(30, 41, 59, 0.6);
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .btn-header:hover {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: var(--primary-color);
+            color: var(--text-primary);
+            transform: translateY(-2px);
+        }
+
+        .header-description {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.6;
+            max-width: 800px;
+        }
+
+        /* Tech badge */
+        .tech-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 20px;
+            color: var(--secondary-color);
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-top: 12px;
+        }
+
+        /* Content sections */
+        .content-section {
+            display: none;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Video container */
+        .video-section {
+            background: rgba(30, 41, 59, 0.4);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+
+        .video-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .video-header h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: rgba(16, 185, 129, 0.2);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 20px;
+            color: var(--secondary-color);
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-badge .pulse {
+            width: 8px;
+            height: 8px;
+            background: var(--secondary-color);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.5;
+                transform: scale(0.9);
+            }
+        }
+
+        .video-container {
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: var(--shadow-lg);
         }
 
         .video-container img {
@@ -146,334 +431,804 @@
             display: block;
         }
 
-        .recognized-link {
-            display: inline-flex;
+        .video-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
             align-items: center;
-            padding: 12px 20px;
-            background: var(--primary-color);
-            color: white;
-            text-decoration: none;
-            border-radius: var(--border-radius);
-            transition: var(--transition);
-            font-weight: 500;
         }
 
-        .recognized-link:hover {
-            background: var(--secondary-color);
-            transform: translateY(-2px);
-            box-shadow: var(--box-shadow);
-        }
-
-        .recognized-link i {
-            margin-right: 8px;
-        }
-
-        /* Form Styles */
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        .video-info {
+            display: flex;
             gap: 20px;
         }
 
-        .form-group {
-            margin-bottom: 20px;
+        .video-stat {
+            display: flex;
+            flex-direction: column;
         }
 
-        label {
-            display: block;
-            margin-bottom: 8px;
+        .video-stat span:first-child {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .video-stat span:last-child {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        /* Stats grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: rgba(30, 41, 59, 0.4);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 25px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary-color);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), transparent);
+            border-radius: 50%;
+            transform: translate(30%, -30%);
+        }
+
+        .stat-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .stat-card-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+
+        .stat-card-title {
+            font-size: 0.85rem;
+            color: var(--text-muted);
             font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-card-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .stat-card-change {
+            font-size: 0.85rem;
+            color: var(--secondary-color);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* Form styles */
+        .form-section {
+            background: rgba(30, 41, 59, 0.4);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 30px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-group label i {
+            color: var(--primary-color);
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 16px;
         }
 
         input[type="text"] {
             width: 100%;
-            padding: 12px 15px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: var(--border-radius);
-            background: rgba(0, 0, 0, 0.2);
-            color: var(--light-color);
-            font-family: 'Poppins', sans-serif;
-            transition: var(--transition);
+            padding: 12px 15px 12px 45px;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            background: var(--dark-bg);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
         }
 
         input[type="text"]:focus {
             outline: none;
-            border-color: var(--accent-color);
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+            border-color: var(--primary-color);
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        input[type="text"]::placeholder {
+            color: var(--text-muted);
         }
 
         .form-actions {
             display: flex;
-            gap: 15px;
-            margin-top: 10px;
+            gap: 12px;
         }
 
         .btn {
-            padding: 12px 25px;
+            padding: 12px 24px;
             border: none;
-            border-radius: var(--border-radius);
-            font-family: 'Poppins', sans-serif;
-            font-weight: 500;
+            border-radius: 10px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            font-size: 0.95rem;
             cursor: pointer;
-            transition: var(--transition);
-            display: inline-flex;
+            transition: all 0.3s ease;
+            display: flex;
             align-items: center;
-            justify-content: center;
-        }
-
-        .btn i {
-            margin-right: 8px;
+            gap: 8px;
         }
 
         .btn-primary {
-            background: var(--primary-color);
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
             color: white;
+            box-shadow: var(--shadow-md);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn-primary:hover::before {
+            left: 100%;
         }
 
         .btn-primary:hover {
-            background: var(--secondary-color);
             transform: translateY(-2px);
-            box-shadow: var(--box-shadow);
+            box-shadow: var(--shadow-lg);
         }
 
         .btn-secondary {
-            background: var(--gray-color);
-            color: white;
+            background: rgba(148, 163, 184, 0.1);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
         }
 
         .btn-secondary:hover {
-            background: #4b5563;
+            background: rgba(148, 163, 184, 0.2);
+            color: var(--text-primary);
             transform: translateY(-2px);
-            box-shadow: var(--box-shadow);
         }
 
-        /* Table Styles */
+        /* Messages */
+        .message {
+            padding: 14px 18px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideIn 0.3s ease-out;
+            border-left: 4px solid;
+        }
+
+        .message.success {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: var(--secondary-color);
+            color: var(--secondary-color);
+        }
+
+        .message.error {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: var(--danger-color);
+            color: var(--danger-color);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* Table styles */
         .table-container {
+            background: rgba(30, 41, 59, 0.4);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .table-header {
+            padding: 20px 25px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-header h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .table-search {
+            display: flex;
+            gap: 10px;
+        }
+
+        .search-input {
+            padding: 8px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--dark-bg);
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            width: 250px;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .table-wrapper {
             overflow-x: auto;
-            border-radius: var(--border-radius);
-            margin-top: 20px;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: var(--border-radius);
-            overflow: hidden;
         }
 
         th, td {
-            padding: 12px 15px;
+            padding: 15px 25px;
             text-align: left;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid var(--border-color);
         }
 
         th {
-            background: rgba(37, 99, 235, 0.3);
+            background: rgba(59, 130, 246, 0.05);
             font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
         }
 
         tr:hover {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(59, 130, 246, 0.05);
         }
 
-        /* Messages */
-        .message {
-            padding: 12px 15px;
-            border-radius: var(--border-radius);
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
+        .table-empty {
+            padding: 60px 20px;
+            text-align: center;
+            color: var(--text-muted);
         }
 
-        .message.success {
-            background: rgba(16, 185, 129, 0.2);
-            border-left: 4px solid var(--success-color);
+        .table-empty i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            opacity: 0.5;
         }
 
-        .message.error {
-            background: rgba(239, 68, 68, 0.2);
-            border-left: 4px solid var(--danger-color);
-        }
-
-        .message i {
-            margin-right: 10px;
-        }
-
-        /* Loading State */
+        /* Loading state */
         .btn:disabled {
             opacity: 0.6;
             cursor: not-allowed;
-            transform: none;
+            transform: none !important;
         }
 
-        .loading {
-            position: relative;
-        }
-
-        .loading::after {
-            content: '';
-            position: absolute;
+        .loading-spinner {
+            display: inline-block;
             width: 16px;
             height: 16px;
-            margin: auto;
-            border: 2px solid transparent;
-            border-top-color: #ffffff;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
             border-radius: 50%;
-            animation: spin 1s linear infinite;
-            top: 0;
-            left: 0;
-            bottom: 0;
-            right: 0;
+            animation: spin 0.8s linear infinite;
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            to { transform: rotate(360deg); }
         }
 
-        /* Responsive Design */
+        /* Responsive design */
+        @media (max-width: 1200px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
         @media (max-width: 992px) {
-            .container {
+            .dashboard-container {
                 grid-template-columns: 1fr;
             }
-            
-            nav ul {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 10px;
+
+            .sidebar {
+                position: static;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
             }
-            
-            nav li {
-                flex: 1;
-                min-width: 140px;
+
+            .logo-section {
+                margin-bottom: 20px;
+                padding-bottom: 20px;
+            }
+
+            .nav-menu {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 15px;
+            }
+
+            .nav-section {
                 margin-bottom: 0;
             }
-            
-            nav a {
-                justify-content: center;
+
+            .sidebar-stats {
+                margin-top: 20px;
             }
-            
-            nav a:hover {
-                transform: translateY(-3px);
+
+            .main-content {
+                padding: 20px;
+            }
+
+            .header-actions {
+                flex-direction: column;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
             }
         }
 
         @media (max-width: 576px) {
-            body {
-                padding: 15px;
+            .content-header {
+                padding: 20px;
             }
-            
-            h1 {
-                font-size: 2rem;
+
+            .header-title {
+                flex-direction: column;
+                align-items: flex-start;
             }
-            
+
             .form-grid {
                 grid-template-columns: 1fr;
             }
-            
+
             .form-actions {
                 flex-direction: column;
             }
-            
+
             .btn {
                 width: 100%;
+                justify-content: center;
             }
-            
-            nav ul {
+
+            .table-search {
                 flex-direction: column;
+            }
+
+            .search-input {
+                width: 100%;
             }
         }
     </style>
 </head>
 
 <body>
-    <div class="container">
-        <header>
-            <h1><i class="fas fa-car"></i> Vehicle Number Plate Detection System</h1>
-            <p class="description">
-                Utilizing Machine Learning algorithms and OpenCV, our system extracts license plate information from real-time footage with precision. 
-                Integrated with MongoDB for efficient data storage, this solution offers seamless scalability and data management.
-            </p>
-        </header>
+    <div class="background-pattern"></div>
+    <div class="grid-pattern"></div>
 
-        <nav>
-            <ul>
-                <li><a href="#" id="openScannerLink" class="active"><i class="fas fa-camera"></i> Open Scanner</a></li>
-                <li><a href="#" id="addVehicleDetailsLink"><i class="fas fa-plus-circle"></i> Add Vehicle</a></li>
-                <li><a href="#" id="yesterdaysDataLink"><i class="fas fa-history"></i> 24h History</a></li>
-                <li><a href="#" id="allRecordsLink"><i class="fas fa-database"></i> All Records</a></li>
-            </ul>
-        </nav>
-
-        <article>
-            <!-- Scanner Section -->
-            <div id="scannerSection">
-                <h2 class="section-title"><i class="fas fa-video"></i> Live Scanner</h2>
-                <div class="video-container">
-                    <img src="/video_feed" alt="License Plate Scanner" id="videoFeed">
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo-section">
+                <div class="logo-icon">
+                    <i class="fas fa-car-side"></i>
                 </div>
-                <a href="/recognized_plates" target="_blank" class="recognized-link">
-                    <i class="fas fa-list"></i> View Recognized Plates
-                </a>
+                <div class="logo-text">
+                    <h2>YOLO11 VRS</h2>
+                    <p>Vehicle Recognition</p>
+                </div>
+            </div>
+
+            <nav class="nav-menu">
+                <div class="nav-section">
+                    <div class="nav-section-title">Main</div>
+                    <ul class="nav-list">
+                        <li class="nav-item">
+                            <a href="#" id="openScannerLink" class="active">
+                                <i class="fas fa-video"></i>
+                                <span>Live Scanner</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" id="addVehicleDetailsLink">
+                                <i class="fas fa-plus-circle"></i>
+                                <span>Add Vehicle</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Data</div>
+                    <ul class="nav-list">
+                        <li class="nav-item">
+                            <a href="#" id="yesterdaysDataLink">
+                                <i class="fas fa-history"></i>
+                                <span>24h History</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" id="allRecordsLink">
+                                <i class="fas fa-database"></i>
+                                <span>All Records</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Account</div>
+                    <ul class="nav-list">
+                        <li class="nav-item">
+                            <a href="/logout">
+                                <i class="fas fa-sign-out-alt"></i>
+                                <span>Logout</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <div class="sidebar-stats">
+                <h4>System Status</h4>
+                <div class="stat-item">
+                    <span>Detection Rate</span>
+                    <span>98.5%</span>
+                </div>
+                <div class="stat-item">
+                    <span>Uptime</span>
+                    <span>99.9%</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="content-header">
+                <div class="header-top">
+                    <div class="header-title">
+                        <div class="header-icon">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <div>
+                            <h1>AI-Powered License Plate Detection</h1>
+                            <div class="tech-badge">
+                                <i class="fas fa-microchip"></i>
+                                <span>YOLO11 Neural Network</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="header-actions">
+                        <a href="/recognized_plates" target="_blank" class="btn-header">
+                            <i class="fas fa-external-link-alt"></i>
+                            <span>View Detections</span>
+                        </a>
+                    </div>
+                </div>
+                <p class="header-description">
+                    Advanced real-time vehicle recognition system powered by YOLO11 deep learning architecture. 
+                    Featuring automated license plate detection, OCR text extraction, and MongoDB integration for comprehensive vehicle tracking and analytics.
+                </p>
+            </header>
+
+            <!-- Scanner Section -->
+            <div id="scannerSection" class="content-section active">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div>
+                                <div class="stat-card-title">Total Vehicles</div>
+                                <div class="stat-card-value" id="totalVehicles">0</div>
+                                <div class="stat-card-change">
+                                    <i class="fas fa-arrow-up"></i>
+                                    <span>+12% this week</span>
+                                </div>
+                            </div>
+                            <div class="stat-card-icon">
+                                <i class="fas fa-car"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div>
+                                <div class="stat-card-title">Detected Today</div>
+                                <div class="stat-card-value" id="detectedToday">0</div>
+                                <div class="stat-card-change">
+                                    <i class="fas fa-chart-line"></i>
+                                    <span>Active monitoring</span>
+                                </div>
+                            </div>
+                            <div class="stat-card-icon">
+                                <i class="fas fa-chart-bar"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div>
+                                <div class="stat-card-title">Active Detections</div>
+                                <div class="stat-card-value" id="activeDetections">0</div>
+                                <div class="stat-card-change">
+                                    <i class="fas fa-eye"></i>
+                                    <span>Real-time tracking</span>
+                                </div>
+                            </div>
+                            <div class="stat-card-icon">
+                                <i class="fas fa-bolt"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="video-section">
+                    <div class="video-header">
+                        <h3>
+                            <i class="fas fa-camera"></i>
+                            Live Camera Feed
+                        </h3>
+                        <div class="status-badge">
+                            <div class="pulse"></div>
+                            <span>ACTIVE</span>
+                        </div>
+                    </div>
+                    <div class="video-container">
+                        <img src="/video_feed" alt="Live Camera Feed" id="videoFeed">
+                        <div class="video-overlay">
+                            <div class="video-info">
+                                <div class="video-stat">
+                                    <span>FPS</span>
+                                    <span id="fpsCounter">30</span>
+                                </div>
+                                <div class="video-stat">
+                                    <span>Resolution</span>
+                                    <span>1280×720</span>
+                                </div>
+                            </div>
+                            <a href="/recognized_plates" target="_blank" class="btn-header">
+                                <i class="fas fa-list"></i>
+                                View All Detections
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Add Vehicle Section -->
-            <div id="addVehicleSection" style="display: none;">
-                <h2 class="section-title"><i class="fas fa-car-side"></i> Add New Vehicle</h2>
-                
-                <div id="messageContainer"></div>
-                
-                <form id="addVehicleForm">
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label for="plate_number"><i class="fas fa-tag"></i> Plate Number</label>
-                            <input type="text" id="plate_number" name="plate_number" required placeholder="e.g., KA01AB1234">
+            <div id="addVehicleSection" class="content-section">
+                <div class="form-section">
+                    <h3 style="margin-bottom: 25px; font-size: 1.4rem;">
+                        <i class="fas fa-plus-circle"></i>
+                        Add New Vehicle to Database
+                    </h3>
+                    
+                    <div id="messageContainer"></div>
+                    
+                    <form id="addVehicleForm">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="plate_number">
+                                    <i class="fas fa-tag"></i>
+                                    License Plate Number
+                                </label>
+                                <div class="input-wrapper">
+                                    <i class="fas fa-hashtag"></i>
+                                    <input type="text" id="plate_number" name="plate_number" required 
+                                           placeholder="KA01AB1234" pattern="[A-Z0-9]+">
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="owner_name">
+                                    <i class="fas fa-user"></i>
+                                    Owner Name
+                                </label>
+                                <div class="input-wrapper">
+                                    <i class="fas fa-user-circle"></i>
+                                    <input type="text" id="owner_name" name="owner_name" required 
+                                           placeholder="John Doe">
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="make">
+                                    <i class="fas fa-cog"></i>
+                                    Vehicle Make
+                                </label>
+                                <div class="input-wrapper">
+                                    <i class="fas fa-car"></i>
+                                    <input type="text" id="make" name="make" required 
+                                           placeholder="Toyota, Honda, etc.">
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="model">
+                                    <i class="fas fa-car-side"></i>
+                                    Vehicle Model
+                                </label>
+                                <div class="input-wrapper">
+                                    <i class="fas fa-car-alt"></i>
+                                    <input type="text" id="model" name="model" required 
+                                           placeholder="Camry, Civic, etc.">
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="color">
+                                    <i class="fas fa-palette"></i>
+                                    Vehicle Color
+                                </label>
+                                <div class="input-wrapper">
+                                    <i class="fas fa-fill-drip"></i>
+                                    <input type="text" id="color" name="color" required 
+                                           placeholder="Red, Blue, White, etc.">
+                                </div>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label for="owner_name"><i class="fas fa-user"></i> Owner Name</label>
-                            <input type="text" id="owner_name" name="owner_name" required placeholder="Enter owner name">
+                        
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary" id="submitBtn">
+                                <i class="fas fa-check"></i>
+                                Add Vehicle to Database
+                            </button>
+                            <button type="reset" class="btn btn-secondary">
+                                <i class="fas fa-undo"></i>
+                                Clear Form
+                            </button>
                         </div>
-                        <div class="form-group">
-                            <label for="make"><i class="fas fa-cog"></i> Make</label>
-                            <input type="text" id="make" name="make" required placeholder="e.g., Maruti, Honda">
-                        </div>
-                        <div class="form-group">
-                            <label for="model"><i class="fas fa-car"></i> Model</label>
-                            <input type="text" id="model" name="model" required placeholder="e.g., Swift, City">
-                        </div>
-                        <div class="form-group">
-                            <label for="color"><i class="fas fa-palette"></i> Color</label>
-                            <input type="text" id="color" name="color" required placeholder="e.g., White, Red">
-                        </div>
-                    </div>
-                    <div class="form-actions">
-                        <button type="submit" class="btn btn-primary" id="submitBtn">
-                            <i class="fas fa-check"></i> Add Vehicle
-                        </button>
-                        <button type="reset" class="btn btn-secondary">
-                            <i class="fas fa-undo"></i> Reset Form
-                        </button>
-                    </div>
-                </form>
+                    </form>
+                </div>
             </div>
 
             <!-- History Section -->
-            <div id="yesterdaysDataSection" style="display: none;">
-                <h2 class="section-title"><i class="fas fa-history"></i> Last 24 Hours History</h2>
-                <div id="historyContent">
-                    <p>Loading history data...</p>
+            <div id="yesterdaysDataSection" class="content-section">
+                <div class="table-container">
+                    <div class="table-header">
+                        <h3><i class="fas fa-history"></i> Last 24 Hours Detection History</h3>
+                        <div class="table-search">
+                            <input type="text" class="search-input" placeholder="Search plates..." id="historySearch">
+                            <button class="btn-header" onclick="refreshHistory()">
+                                <i class="fas fa-sync-alt"></i>
+                                Refresh
+                            </button>
+                        </div>
+                    </div>
+                    <div class="table-wrapper">
+                        <div id="historyContent">
+                            <div class="table-empty">
+                                <i class="fas fa-history"></i>
+                                <p>Loading detection history...</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <!-- All Records Section -->
-            <div id="allRecordsSection" style="display: none;">
-                <h2 class="section-title"><i class="fas fa-database"></i> All Vehicle Records</h2>
-                <div id="recordsContent">
-                    <p>Loading vehicle records...</p>
+            <div id="allRecordsSection" class="content-section">
+                <div class="table-container">
+                    <div class="table-header">
+                        <h3><i class="fas fa-database"></i> All Vehicle Records</h3>
+                        <div class="table-search">
+                            <input type="text" class="search-input" placeholder="Search vehicles..." id="recordsSearch">
+                            <button class="btn-header" onclick="refreshRecords()">
+                                <i class="fas fa-sync-alt"></i>
+                                Refresh
+                            </button>
+                        </div>
+                    </div>
+                    <div class="table-wrapper">
+                        <div id="recordsContent">
+                            <div class="table-empty">
+                                <i class="fas fa-database"></i>
+                                <p>Loading vehicle records...</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </article>
+        </main>
     </div>
 
     <script>
@@ -489,7 +1244,6 @@
                 </div>
             `;
             
-            // Auto-hide after 5 seconds
             setTimeout(() => {
                 messageContainer.innerHTML = '';
             }, 5000);
@@ -498,18 +1252,16 @@
         function setLoading(button, isLoading) {
             if (isLoading) {
                 button.disabled = true;
-                button.classList.add('loading');
-                button.innerHTML = '<span style="opacity: 0;">Adding...</span>';
+                button.innerHTML = '<div class="loading-spinner"></div> Processing...';
             } else {
                 button.disabled = false;
-                button.classList.remove('loading');
-                button.innerHTML = '<i class="fas fa-check"></i> Add Vehicle';
+                button.innerHTML = '<i class="fas fa-check"></i> Add Vehicle to Database';
             }
         }
 
         // Navigation functionality
         document.addEventListener('DOMContentLoaded', function() {
-            const navLinks = document.querySelectorAll('nav a');
+            const navLinks = document.querySelectorAll('.nav-item a');
             const sections = {
                 scanner: document.getElementById('scannerSection'),
                 addVehicle: document.getElementById('addVehicleSection'),
@@ -520,11 +1272,11 @@
             function showSection(sectionToShow, activeLink) {
                 // Hide all sections
                 for (const key in sections) {
-                    sections[key].style.display = 'none';
+                    sections[key].classList.remove('active');
                 }
                 
                 // Show the requested section
-                sections[sectionToShow].style.display = 'block';
+                sections[sectionToShow].classList.add('active');
                 
                 // Update active class on navigation
                 navLinks.forEach(link => link.classList.remove('active'));
@@ -562,8 +1314,6 @@
                 e.preventDefault();
                 
                 const formData = new FormData(addVehicleForm);
-                
-                // Convert FormData to regular object
                 const data = {};
                 for (let [key, value] of formData.entries()) {
                     data[key] = value.trim();
@@ -575,10 +1325,8 @@
                     return;
                 }
                 
-                // Show loading state
                 setLoading(submitBtn, true);
                 
-                // Submit data
                 fetch('/add_vehicle', {
                     method: 'POST',
                     headers: {
@@ -586,25 +1334,19 @@
                     },
                     body: new URLSearchParams(data)
                 })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    return response.json();
-                })
+                .then(response => response.json())
                 .then(result => {
-                    console.log('Server response:', result);
                     setLoading(submitBtn, false);
                     
                     if (result.success) {
                         showMessage(result.message || 'Vehicle added successfully!', 'success');
                         addVehicleForm.reset();
+                        updateStats();
                     } else {
                         showMessage(result.error || 'Failed to add vehicle', 'error');
                     }
                 })
                 .catch(error => {
-                    console.error('Error:', error);
                     setLoading(submitBtn, false);
                     showMessage(`Error: ${error.message}`, 'error');
                 });
@@ -613,98 +1355,142 @@
             // Load history data
             function loadHistoryData() {
                 const historyContent = document.getElementById('historyContent');
-                historyContent.innerHTML = '<p>Loading history data...</p>';
+                historyContent.innerHTML = '<div class="table-empty"><i class="fas fa-spinner fa-spin"></i><p>Loading history data...</p></div>';
                 
                 fetch('/api/history')
                 .then(response => response.json())
                 .then(data => {
                     if (data.success && data.history.length > 0) {
                         const tableHTML = `
-                            <div class="table-container">
-                                <table>
-                                    <thead>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Plate Number</th>
+                                        <th>Owner Name</th>
+                                        <th>Make</th>
+                                        <th>Model</th>
+                                        <th>Color</th>
+                                        <th>Timestamp</th>
+                                        <th>Confidence</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${data.history.map(record => `
                                         <tr>
-                                            <th>Plate Number</th>
-                                            <th>Owner Name</th>
-                                            <th>Make</th>
-                                            <th>Model</th>
-                                            <th>Color</th>
-                                            <th>Timestamp</th>
+                                            <td><strong>${record.plate_number}</strong></td>
+                                            <td>${record.owner_name}</td>
+                                            <td>${record.make}</td>
+                                            <td>${record.model}</td>
+                                            <td>${record.color}</td>
+                                            <td>${new Date(record.timestamp).toLocaleString()}</td>
+                                            <td>${record.confidence || 'N/A'}</td>
                                         </tr>
-                                    </thead>
-                                    <tbody>
-                                        ${data.history.map(record => `
-                                            <tr>
-                                                <td>${record.plate_number}</td>
-                                                <td>${record.owner_name}</td>
-                                                <td>${record.make}</td>
-                                                <td>${record.model}</td>
-                                                <td>${record.color}</td>
-                                                <td>${new Date(record.timestamp).toLocaleString()}</td>
-                                            </tr>
-                                        `).join('')}
-                                    </tbody>
-                                </table>
-                            </div>
+                                    `).join('')}
+                                </tbody>
+                            </table>
                         `;
                         historyContent.innerHTML = tableHTML;
                     } else {
-                        historyContent.innerHTML = '<p>No detection history found for the last 24 hours.</p>';
+                        historyContent.innerHTML = '<div class="table-empty"><i class="fas fa-history"></i><p>No detection history found for the last 24 hours.</p></div>';
                     }
                 })
                 .catch(error => {
-                    console.error('Error loading history:', error);
-                    historyContent.innerHTML = '<p>Error loading history data.</p>';
+                    historyContent.innerHTML = '<div class="table-empty"><i class="fas fa-exclamation-triangle"></i><p>Error loading history data.</p></div>';
                 });
             }
 
             // Load records data
             function loadRecordsData() {
                 const recordsContent = document.getElementById('recordsContent');
-                recordsContent.innerHTML = '<p>Loading vehicle records...</p>';
+                recordsContent.innerHTML = '<div class="table-empty"><i class="fas fa-spinner fa-spin"></i><p>Loading vehicle records...</p></div>';
                 
                 fetch('/api/records')
                 .then(response => response.json())
                 .then(data => {
                     if (data.success && data.records.length > 0) {
                         const tableHTML = `
-                            <div class="table-container">
-                                <table>
-                                    <thead>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Plate Number</th>
+                                        <th>Owner Name</th>
+                                        <th>Make</th>
+                                        <th>Model</th>
+                                        <th>Color</th>
+                                        <th>Added On</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${data.records.map(record => `
                                         <tr>
-                                            <th>Plate Number</th>
-                                            <th>Owner Name</th>
-                                            <th>Make</th>
-                                            <th>Model</th>
-                                            <th>Color</th>
-                                            <th>Added On</th>
+                                            <td><strong>${record.plate_number}</strong></td>
+                                            <td>${record.owner_name}</td>
+                                            <td>${record.make}</td>
+                                            <td>${record.model}</td>
+                                            <td>${record.color}</td>
+                                            <td>${record.created_at ? new Date(record.created_at).toLocaleDateString() : 'N/A'}</td>
                                         </tr>
-                                    </thead>
-                                    <tbody>
-                                        ${data.records.map(record => `
-                                            <tr>
-                                                <td>${record.plate_number}</td>
-                                                <td>${record.owner_name}</td>
-                                                <td>${record.make}</td>
-                                                <td>${record.model}</td>
-                                                <td>${record.color}</td>
-                                                <td>${record.created_at ? new Date(record.created_at).toLocaleDateString() : 'N/A'}</td>
-                                            </tr>
-                                        `).join('')}
-                                    </tbody>
-                                </table>
-                            </div>
+                                    `).join('')}
+                                </tbody>
+                            </table>
                         `;
                         recordsContent.innerHTML = tableHTML;
                     } else {
-                        recordsContent.innerHTML = '<p>No vehicle records found.</p>';
+                        recordsContent.innerHTML = '<div class="table-empty"><i class="fas fa-database"></i><p>No vehicle records found.</p></div>';
                     }
                 })
                 .catch(error => {
-                    console.error('Error loading records:', error);
-                    recordsContent.innerHTML = '<p>Error loading vehicle records.</p>';
+                    recordsContent.innerHTML = '<div class="table-empty"><i class="fas fa-exclamation-triangle"></i><p>Error loading vehicle records.</p></div>';
                 });
             }
+
+            // Update stats
+            function updateStats() {
+                fetch('/api/stats')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('totalVehicles').textContent = data.total_vehicles || 0;
+                    document.getElementById('detectedToday').textContent = data.detected_today || 0;
+                    document.getElementById('activeDetections').textContent = data.active_detections || 0;
+                })
+                .catch(error => {
+                    console.error('Error updating stats:', error);
+                });
+            }
+
+            // Initialize
+            updateStats();
+            setInterval(updateStats, 10000); // Update every 10 seconds
+        });
+
+        // Refresh functions
+        function refreshHistory() {
+            loadHistoryData();
+        }
+
+        function refreshRecords() {
+            loadRecordsData();
+        }
+
+        // Search functionality
+        document.getElementById('historySearch')?.addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const rows = document.querySelectorAll('#historyContent tbody tr');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
+        });
+
+        document.getElementById('recordsSearch')?.addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const rows = document.querySelectorAll('#recordsContent tbody tr');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(searchTerm) ? '' : 'none';
+            });
         });
     </script>
 </body>
